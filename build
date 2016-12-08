@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+
+image_name="quay.io/concur_platform/rohr"
+if [ ! -z "$1" ]; then
+  image_name=$1
+fi
+
+version="latest"
+if [ ! -z "$2" ]; then
+  version=$2
+fi
+
+echo ">>> Build Rohr installation binary docker image..."
+if [ $ENVIRONMENT == "CIRCLE_CI" ]; then
+  sudo docker build --rm=false -t rohr-binary-build .
+else
+  docker build -t rohr-binary-build .
+fi
+
+echo ">>> Install Rohr binary into release docker image..."
+if [ $ENVIRONMENT == "CIRCLE_CI" ]; then
+  sudo docker run --rm rohr-binary-build | sudo docker build --rm=false -t "$image_name:$version" --no-cache -f Dockerfile.install -
+else
+  docker run --rm rohr-binary-build | docker build -t "$image_name:$version" --no-cache -f Dockerfile.install -
+  echo ">>> Remove Rohr installation binary docker image..."
+  docker rmi rohr-binary-build
+fi

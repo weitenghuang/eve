@@ -1,0 +1,12 @@
+FROM alpine:3.4
+MAINTAINER Concur Platform R&D <platform-engineering@concur.com>
+
+ENV PATH="$PATH:/opt/rohr/bin"
+
+WORKDIR "/opt/rohr"
+
+RUN mkdir bin
+
+COPY eve /opt/rohr/bin/eve
+
+CMD ["eve"]

@@ -1,0 +1,30 @@
+machine:
+  timezone:
+    America/Los_Angeles
+  services:
+    - docker
+  environment:
+    ENVIRONMENT: "CIRCLE_CI"
+    ROHR_PORT: 80
+    ROHR_DNS: "localhost"
+    ROHR_IMAGE: "quay.io/concur_platform/rohr"
+dependencies:
+  pre:
+    - docker login --username="concur_platform+devxbot" --password="${CONCUR_QUAY_ROBOT_PWD}" --email="devx@concur.com" quay.io
+    - echo "$(git rev-parse --short HEAD)" >> .tag
+    - docker info
+    - ./build $ROHR_IMAGE $(cat .tag)
+  post:
+    - docker images
+test:
+  override:
+    - docker run -d --name testing -e "ENVIRONMENT=$ENVIRONMENT" -e "ROHR_PORT=$ROHR_PORT" -e "ROHR_DNS=$ROHR_DNS" -p $ROHR_PORT:$ROHR_PORT $ROHR_IMAGE:$(cat .tag)
+    - docker logs testing
+  post:
+    - docker stop testing
+deployment:
+  prod:
+    branch: master
+    commands:
+      - docker tag $ROHR_IMAGE:$(cat .tag) $ROHR_IMAGE:latest
+      - docker push $ROHR_IMAGE
