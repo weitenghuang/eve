@@ -5,8 +5,8 @@ machine:
     - docker
   environment:
     ENVIRONMENT: "CIRCLE_CI"
-    ROHR_PORT: 80
-    ROHR_DNS: "localhost"
+    EVE_PORT: 80
+    EVE_DNS: "localhost"
     ROHR_IMAGE: "quay.io/concur_platform/rohr"
 dependencies:
   pre:
@@ -18,7 +18,7 @@ dependencies:
     - docker images
 test:
   override:
-    - docker run -d --name testing -e "ENVIRONMENT=$ENVIRONMENT" -e "ROHR_PORT=$ROHR_PORT" -e "ROHR_DNS=$ROHR_DNS" -p $ROHR_PORT:$ROHR_PORT $ROHR_IMAGE:$(cat .tag)
+    - docker run -d --name testing -e "ENVIRONMENT=$ENVIRONMENT" -e "EVE_PORT=$EVE_PORT" -e "EVE_DNS=$EVE_DNS" -p $EVE_PORT:$EVE_PORT $ROHR_IMAGE:$(cat .tag)
     - docker logs testing
   post:
     - docker stop testing

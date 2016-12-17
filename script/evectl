@@ -1,0 +1,167 @@
+#!/usr/bin/env zsh
+
+set -e
+
+usage() {
+  echo "
+usage: evectl <command> [<args>]
+
+Some useful commands are:
+create        Create a quoin (create quoin), or an infrastructure (create infrastructure)
+delete        Delete an infrastructure (delete infrastructure)
+state         Get infrastructure state information
+status        Get infrastructure lifecycle status
+connect       Connect to \"platform-kubernete\" type of cluster infrastructure
+"
+}
+
+create_quoin() {
+  name="$1"
+  echo -e "\e[93mRequest to create quoin $name ...\e[0m"
+  cat <<END | http -f POST http://localhost:8088/quoin Content-Type:"application/json" --verbose
+{
+  "name": "$name"
+}
+END
+
+  echo -e "\e[93mTarball quoin files...\e[0m"
+  #tar -cvzf quoin.tar.gz *.tf *.tfvars
+  if [[ -d "./certs" && -d "./keys" ]]; then
+    tar -cvzf quoin.tar.gz *.tf *.tfvars ./certs ./keys
+  else
+    tar -cvzf quoin.tar.gz *.tf *.tfvars
+  fi
+
+  echo -e "\n\e[93mUpload quoin tarball to server...\e[0m"
+  http -f POST http://localhost:8088/quoin/$name/upload Content-Type:"application/gzip" <quoin.tar.gz --verbose
+
+  echo -e "\e[92mQuoin is created on eve server\e[0m"
+}
+
+create_infrastructure() {
+  name="$1"
+  quoin_name="$3"
+  quoin=$(http GET "http://localhost:8088/quoin/$quoin_name" --body --json)
+
+  echo -e "\e[93mRequest to create infrastructure $name...\e[0m"
+  cat <<END | http -f POST http://localhost:8088/infrastructure Content-Type:"application/json" --verbose
+{
+    "name": "$name",
+    "quoin": $quoin,
+    "variables": [
+        {"key":"name","value":"$name"}
+    ]
+}
+END
+  echo -e "\e[92mRequest is accepted\e[0m"
+
+}
+
+delete_infrastructure() {
+  name="$1"
+  echo -e "\e[93mRequest to delete infrastructure $name...\e[0m"
+  http -f DELETE http://localhost:8088/infrastructure/$name Content-Type:"application/json" --verbose
+  echo -e "\e[92mRequest is accepted\e[0m"
+}
+
+create() {
+  command="$1"
+  case $command in
+    "quoin")
+      shift
+      create_quoin $@
+      ;;
+    "infrastructure")
+      shift
+      create_infrastructure $@
+      ;;
+  esac
+}
+
+delete() {
+  command="$1"
+  case $command in
+    # "quoin")
+    #   shift
+    #   delete_quoin $@
+    #   ;;
+    "infrastructure")
+      shift
+      delete_infrastructure $@
+      ;;
+  esac
+}
+
+status() {
+  name="$1"
+  status_num=$(http -f GET http://localhost:8088/infrastructure/$name --body --json|jq '.status')
+  status_print=""
+  case $status_num in
+    "2")
+      status_print="validated"
+      ;;
+    "4")
+      status_print="running"
+      ;;
+    "8")
+      status_print="deployed"
+      ;;
+    "16")
+      status_print="destroyed"
+      ;;
+  esac
+  echo $status_print
+}
+
+state() {
+  name="$1"
+  status_num=$(http -f GET http://localhost:8088/infrastructure/$name --body --json|jq '.status')
+  if [ $status_num -eq 4 ]; then
+    echo "eve server is processing your infrastructure request...\n"
+    sleep 1
+    state $name
+  else
+    http -f GET http://localhost:8088/infrastructure/$name/state --body --json|jq '.'
+  fi
+}
+
+connect() {
+  name="$1"
+  servername=$(http -f GET http://localhost:8088/infrastructure/$name/state --body --json| jq -r '.modules[0].outputs.kubernetes_api_dns.value')
+  kubectl config set-cluster $name --server=https://$servername --certificate-authority=ca-chain.pem
+  kubectl config set-credentials "$name-admin" --certificate-authority=ca-chain.pem --client-key=admin-key.pem --client-certificate=admin.pem
+  kubectl config set-context $name --cluster=$name --user="$name-admin"
+  kubectl config use-context $name
+  kubectl cluster-info
+}
+
+main() {
+  command="$1"
+  case $command in
+    "" | "-h" | "--help")
+      usage
+      ;;
+    "create")
+      shift
+      create $@
+      ;;
+    "delete")
+      shift
+      delete $@
+      ;;
+    "state")
+      shift
+      state $@
+      ;;
+    "status")
+      shift
+      status $@
+      ;;
+    "connect")
+      shift
+      connect $@
+      ;;
+  esac
+}
+
+main "$@"

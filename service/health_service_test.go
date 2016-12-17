@@ -2,7 +2,7 @@ package service_test
 
 import (
 	"github.com/concur/rohr"
-	"github.com/concur/rohr/http/service"
+	"github.com/concur/rohr/service"
 	"os"
 	"reflect"
 	"testing"

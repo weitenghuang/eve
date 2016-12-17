@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+usage() {
+    echo "
+usage: dev <command> [<args>]
+
+Some useful commands are:
+env       Generate default environment values in .env on current directory
+build     Build eve development docker image
+up        Start project's docker-compose
+down      Down project's docker-compose
+clear     Clean up docker container and remove eve docker image
+"
+}
+
+envgen() {
+  export EVE_DB_PORT=28015
+  export EVE_QUEUE_PORT=4222
+  echo "EVE_PORT=8088
+EVE_DNS=eve
+EVE_SCHEME=http
+EVE_DB_PORT=${EVE_DB_PORT}
+EVE_DB_URL=rethink:${EVE_DB_PORT}
+EVE_DB_NAME=eve
+EVE_QUEUE_PORT=${EVE_QUEUE_PORT}
+EVE_QUEUE_URL=nats://nats:${EVE_QUEUE_PORT}
+AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" > ./.env
+}
+
+main() {
+  command="$1"
+  case $command in
+    "" | "-h" | "--help")
+      usage
+      ;;
+    "env")
+      envgen
+      ;;
+    "build")
+      docker-compose build eve
+      ;;
+    "up")
+      if [ ! -f ./.env ]; then
+        echo "Generating .env"
+        envgen
+      fi
+      if [[ "$(docker images -q rohr_eve 2> /dev/null)" == "" ]]; then
+        docker-compose build eve
+      fi
+      docker-compose up
+      ;;
+    "down")
+      docker-compose down
+      ;;
+    "clear")
+      docker rm `docker ps -q -f status=exited` &>/dev/null
+      docker rmi `docker images -f "dangling=true" -q` &>/dev/null
+      docker volume rm `docker volume ls -q` &>/dev/null
+      if [[ "$(docker images -q rohr_eve 2> /dev/null)" != "" ]]; then
+        docker rmi rohr_eve
+      fi
+      if [ -f ./.env ]; then
+        rm ./.env
+      fi
+      ;;
+  esac
+}
+
+main "$@"

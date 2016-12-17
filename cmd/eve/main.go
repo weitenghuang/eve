@@ -1,26 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"github.com/concur/rohr/http"
-	"github.com/concur/rohr/http/httprouter"
+	"github.com/concur/rohr/cmd/eve/command"
+	"log"
 	"os"
 )
 
 func main() {
-	port := ":8080"
-	if os.Getenv("ROHR_PORT") != "" {
-		port = fmt.Sprintf(":%s", os.Getenv("ROHR_PORT"))
+	if err := command.Execute(); err != nil {
+		log.Fatalln(err)
+		os.Exit(-1)
 	}
-	dns := "localhost"
-	if os.Getenv("ROHR_DNS") != "" {
-		dns = os.Getenv("ROHR_DNS")
-	}
-	os.Getenv("ROHR_PORT")
-	apiServer := http.ApiServer{
-		Addr:   port,
-		DNS:    dns,
-		Router: httprouter.NewRouter(),
-	}
-	apiServer.ListenAndServe()
 }

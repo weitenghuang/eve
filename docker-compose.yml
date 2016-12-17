@@ -1,0 +1,45 @@
+version: '2'
+services:
+  rethink:
+    image: rethinkdb:2.3.5
+    ports:
+      - "$EVE_DB_PORT:$EVE_DB_PORT"
+      - "29015:29015"
+      - "8080:8080"
+    volumes:
+      - ./rethinkdb_data:/data/rethinkdb_data
+  nats:
+    image: nats:0.9.6
+    ports:
+      - "8222:8222"
+      - "6222:6222"
+      - "$EVE_QUEUE_PORT:$EVE_QUEUE_PORT"
+  eve:
+    build: .
+    ports:
+      - "$EVE_PORT:$EVE_PORT"
+    env_file: .env
+    command: ["eve", "up"]
+    links:
+      - rethink
+      - nats
+  eve-agent-create:
+    image: rohr_eve:latest
+    env_file: .env
+    command: ["eve", "agent", "create"]
+    links:
+      - rethink
+      - nats
+  eve-agent-delete:
+    image: rohr_eve:latest
+    env_file: .env
+    command: ["eve", "agent", "delete"]
+    links:
+      - rethink
+      - nats
+  db-init:
+    image: rohr_eve:latest
+    env_file: .env
+    command: ["eve", "db", "init"]
+    links:
+      - rethink

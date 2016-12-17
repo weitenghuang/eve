@@ -13,7 +13,7 @@ type HealthService struct {
 	*rohr.HealthInfo
 }
 
-func (h *HealthService) GetHealth() (*rohr.HealthInfo, error) {
+func (h HealthService) GetHealth() (*rohr.HealthInfo, error) {
 	h.HealthInfo.Uptime = fmt.Sprintf("%s", time.Since(startTime))
 	return h.HealthInfo, nil
 }

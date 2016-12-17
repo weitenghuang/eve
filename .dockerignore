@@ -1,4 +1,6 @@
 .git
 .gitignore
+.env
 vendor/
+rethinkdb_data/
 README.md

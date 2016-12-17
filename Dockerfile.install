@@ -1,4 +1,4 @@
-FROM alpine:3.4
+FROM quay.io/concur_platform/alpine:3.5
 MAINTAINER Concur Platform R&D <platform-engineering@concur.com>
 
 ENV PATH="$PATH:/opt/rohr/bin"
@@ -8,5 +8,10 @@ WORKDIR "/opt/rohr"
 RUN mkdir bin
 
 COPY eve /opt/rohr/bin/eve
+
+COPY terraform /opt/rohr/bin/terraform
+
+RUN apk update \
+ && apk --update add git
 
 CMD ["eve"]
