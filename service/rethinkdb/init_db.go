@@ -5,7 +5,7 @@ import (
 	"log"
 )
 
-func (db *DbSession) Status() error {
+func (db *DbSession) Initialization() error {
 	if err := db.dbInit(); err != nil {
 		return err
 	}
@@ -41,26 +41,24 @@ func (db *DbSession) tableInit() error {
 	if err != nil {
 		return err
 	}
-	tables := map[string]bool{
-		QUOIN_TABLE:         false,
-		QUOIN_ARCHIVE_TABLE: false,
-		INFRA_TABLE:         false,
+	tables := map[string]byte{
+		QUOIN_TABLE:         0,
+		QUOIN_ARCHIVE_TABLE: 0,
+		INFRA_TABLE:         0,
 	}
 	var row interface{}
 	for cursor.Next(&row) {
 		name := row.(string)
 		if _, ok := tables[name]; ok {
-			tables[name] = true
+			delete(tables, name)
 		}
 	}
-	for key, value := range tables {
-		if !value {
-			log.Println("Creating table:", key)
-			if _, err := r.DB(db.DbName).TableCreate(key, r.TableCreateOpts{PrimaryKey: "Id"}).RunWrite(db.Session); err != nil {
-				return err
-			}
-			log.Println("Table", key, "is created!")
+	for key, _ := range tables {
+		log.Println("Creating table:", key)
+		if _, err := r.DB(db.DbName).TableCreate(key, r.TableCreateOpts{PrimaryKey: "Id"}).RunWrite(db.Session); err != nil {
+			return err
 		}
+		log.Println("Table", key, "is created!")
 	}
 	return nil
 }

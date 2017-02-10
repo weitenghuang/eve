@@ -1,15 +1,10 @@
 package rethinkdb
 
 import (
+	"github.com/concur/rohr/pkg/config"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"log"
-	"os"
 	"sync"
-)
-
-const (
-	DEFAULT_URL     = "localhost:28015"
-	DEFAULT_DB_NAME = "eve"
 )
 
 type DbSession struct {
@@ -26,20 +21,12 @@ func init() {
 
 func buildSession() error {
 	var mu sync.Mutex
-	url := os.Getenv("EVE_DB_URL")
-	if url == "" {
-		url = DEFAULT_URL
-	}
-
-	dbName := os.Getenv("EVE_DB_NAME")
-	if dbName == "" {
-		dbName = DEFAULT_DB_NAME
-	}
+	dbConfig := config.NewRethinkDbConfig()
 	log.Println("Connecting to database...")
 	session, err := r.Connect(r.ConnectOpts{
-		Address:    url,
-		InitialCap: 4,
-		MaxOpen:    8,
+		Address:    dbConfig.Url,
+		InitialCap: dbConfig.InitialCap,
+		MaxOpen:    dbConfig.MaxOpen,
 	})
 	if err != nil {
 		return err
@@ -47,8 +34,8 @@ func buildSession() error {
 	mu.Lock()
 	defaultSession = &DbSession{
 		Session: session,
-		Url:     url,
-		DbName:  dbName,
+		Url:     dbConfig.Url,
+		DbName:  dbConfig.DatabaseName,
 	}
 	mu.Unlock()
 	return nil

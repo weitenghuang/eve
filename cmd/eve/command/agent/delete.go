@@ -38,6 +38,9 @@ func delete(infraSvc rohr.InfrastructureService, stateServer *http.ApiServer) ro
 			return
 		}
 		log.Printf("Start infrastructure deletion process for %s.\n", infra.Name)
+		if err := infraSvc.UpdateInfrastructureStatus(infra.Name, rohr.RUNNING); err != nil {
+			log.Println(err)
+		}
 		id := infraSvc.GetQuoinArchiveIdFromUri(infra.Quoin.ArchiveUri)
 		quoinArchive, err := infraSvc.GetQuoinArchive(id)
 		if err != nil {

@@ -1,7 +1,7 @@
 package rohr
 
 type HealthService interface {
-	GetHealth() (*HealthInfo, error)
+	GetHealth() *HealthInfo
 }
 
 type QuoinService interface {
@@ -31,9 +31,17 @@ type InfrastructureService interface {
 type InfrastructureAsyncHandler func(infra *Infrastructure)
 
 type HealthInfo struct {
-	Verion      string
-	Environment string
-	Uptime      string
+	Hostname string            `json:"hostname"`
+	Errors   []Error           `json:"errors,omitempty"`
+	Metadata map[string]string `json:"metadata"`
+	Uptime   string            `json:"uptime"`
+}
+
+type Error struct {
+	Description string            `json:"description"`
+	Error       string            `json:"error"`
+	Metadata    map[string]string `json:"metadata"`
+	Type        string            `json:"type"`
 }
 
 type Quoin struct {
@@ -48,7 +56,6 @@ type QuoinArchive struct {
 	Id        string
 	QuoinName string // Archive will be linked to specific quoin instance
 	Modules   []byte
-	// TfPlan    []byte
 }
 
 type QuoinVar struct {

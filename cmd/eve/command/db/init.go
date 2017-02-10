@@ -16,9 +16,9 @@ var InitCmd = &cobra.Command{
 	Short: "To initialize eve db",
 	Long:  `To initialize eve db`,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Println("Verify DB status...")
+		log.Println("Initializing DB...")
 		db := connectDB(0)
-		if err := db.Status(); err != nil {
+		if err := db.Initialization(); err != nil {
 			log.Panicln(err)
 		}
 		log.Println("DB is in good condition.")

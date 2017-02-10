@@ -12,21 +12,21 @@ import (
 )
 
 type mockHealthService struct {
-	*rohr.HealthInfo
 }
 
-func (h *mockHealthService) GetHealth() (*rohr.HealthInfo, error) {
-	return h.HealthInfo, nil
+func (h *mockHealthService) GetHealth() *rohr.HealthInfo {
+	return &rohr.HealthInfo{
+		Hostname: "TestHost",
+		Metadata: map[string]string{
+			"Version":     "v0.0.1",
+			"Environment": "DEV",
+		},
+		Uptime: "",
+	}
 }
 
 func TestRouter_GetHealthHandler(t *testing.T) {
-	healthHandler := rohrRouter.GetHealthHandler(&mockHealthService{
-		HealthInfo: &rohr.HealthInfo{
-			Verion:      "testing",
-			Environment: "dev",
-			Uptime:      "1s",
-		},
-	})
+	healthHandler := rohrRouter.GetHealthHandler(&mockHealthService{})
 
 	router := httprouter.New()
 	router.GET("/health_test", healthHandler)
@@ -40,11 +40,9 @@ func TestRouter_GetHealthHandler(t *testing.T) {
 		t.Errorf("GetHealthHandler returns HTTP error code: %v, header: %#v, body: %#v", w.Code, response_header, response_body)
 	}
 
-	if !strings.Contains(response_body, "{\"Verion\":\"testing\",\"Environment\":\"dev\",\"Uptime\":\"1s\"}") {
+	if !strings.Contains(response_body, "\"metadata\":{\"Environment\":\"DEV\",\"Version\":\"v0.0.1\"}") {
 		t.Errorf("GetHealthHandler should return mock health info.")
 	}
-
-	t.Logf("GetHealthHandler returns header: %#v, body: %#v", response_header, response_body)
 }
 
 func TestRouter_RegisterRoute(t *testing.T) {
@@ -54,7 +52,7 @@ func TestRouter_RegisterRoute(t *testing.T) {
 	w := httptest.NewRecorder()
 	hrouter.ServeHTTP(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Errorf("RegisterRoute should add Health endpoint hanlder for \"/health\" path. Request returns HTTP error code: %v, header: %#v, body: %#v", w.Code, w.Header(), w.Body.String())
+	if w.Code != http.StatusServiceUnavailable {
+		t.Errorf("RegisterRoute should add Health endpoint hanlder for \"/health\" path. Without dependencies, request should returns HTTP error code 503. Return code: %v, header: %#v, body: %#v", w.Code, w.Header(), w.Body.String())
 	}
 }

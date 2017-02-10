@@ -4,14 +4,8 @@ import (
 	"fmt"
 	"github.com/concur/rohr/http"
 	"github.com/concur/rohr/http/httprouter"
+	"github.com/concur/rohr/pkg/config"
 	"github.com/spf13/cobra"
-	"os"
-)
-
-const (
-	DEFAULT_PORT   = "8088"
-	DEFAULT_DNS    = "localhost"
-	DEFAULT_SCHEME = "http"
 )
 
 var apiServer *http.ApiServer
@@ -27,22 +21,11 @@ var upCmd = &cobra.Command{
 }
 
 func init() {
-	port := os.Getenv("EVE_PORT")
-	if port == "" {
-		port = DEFAULT_PORT
-	}
-	dns := os.Getenv("EVE_DNS")
-	if dns == "" {
-		dns = DEFAULT_DNS
-	}
-	scheme := os.Getenv("EVE_SCHEME")
-	if scheme == "" {
-		scheme = DEFAULT_SCHEME
-	}
+	apiConfig := config.NewApiServerConfig()
 	apiServer = &http.ApiServer{
-		Addr:   fmt.Sprintf(":%s", port),
-		DNS:    dns,
-		Scheme: scheme,
+		Addr:   fmt.Sprintf(":%s", apiConfig.Port),
+		DNS:    apiConfig.DNS,
+		Scheme: apiConfig.Scheme,
 		// Router: httprouter.NewRouter(),
 	}
 }

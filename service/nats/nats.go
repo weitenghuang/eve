@@ -1,30 +1,26 @@
 package nats
 
 import (
+	"github.com/concur/rohr/pkg/config"
 	"github.com/nats-io/go-nats"
 	"log"
-	"os"
+	"math"
 	"time"
 )
 
-const (
-	MAX_RETRY int = 60
-)
-
 func EncodedConn() (*nats.EncodedConn, error) {
-	url := os.Getenv("EVE_QUEUE_URL")
-	if url == "" {
-		url = nats.DefaultURL
+	natsConfig := config.NewNatsConfig()
+	opts := &nats.Options{
+		AllowReconnect: natsConfig.AllowReconnect,
+		MaxReconnect:   natsConfig.MaxReconnect,
+		ReconnectWait:  natsConfig.ReconnectWait,
+		Timeout:        natsConfig.Timeout,
+		Url:            natsConfig.Url,
 	}
 
-	opts := &nats.Options{
-		AllowReconnect: true,
-		MaxReconnect:   30,
-		ReconnectWait:  5 * time.Second,
-		Timeout:        1 * time.Second,
-		Url:            url,
-	}
-	nc, err := Connect(opts, 0)
+	// n maxRetry will produce nth partial sum for total re-try's wait time
+	maxRetry := int(math.Floor(math.Sqrt(float64(opts.MaxReconnect * 2))))
+	nc, err := connect(opts, 0, maxRetry)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -37,15 +33,14 @@ func EncodedConn() (*nats.EncodedConn, error) {
 	return c, nil
 }
 
-func Connect(opts *nats.Options, retry int) (*nats.Conn, error) {
+func connect(opts *nats.Options, retry int, maxRetry int) (*nats.Conn, error) {
 	nc, err := (*opts).Connect()
 	if err != nil {
-		if err == nats.ErrNoServers && retry < MAX_RETRY {
+		if err == nats.ErrNoServers && retry < maxRetry {
 			retry++
 			log.Println("Wait for", retry, "seconds to re-try nats queue server connection.")
-			// Max total wait time = 30 minutes
 			time.Sleep(time.Duration(retry) * time.Second)
-			nc, err = Connect(opts, retry)
+			nc, err = connect(opts, retry, maxRetry)
 			if err != nil {
 				return nil, err
 			}

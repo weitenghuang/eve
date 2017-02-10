@@ -33,12 +33,12 @@ func (infraSvc InfrastructureService) GetInfrastructureState(name string) (map[s
 func (infraSvc InfrastructureService) CreateInfrastructure(infra *rohr.Infrastructure) error {
 	searchResult, _ := infraSvc.GetInfrastructure(infra.Name)
 	if searchResult != nil {
-		log.Println("Found existing infrastructure %s.", infra.Name)
+		log.Printf("Found existing infrastructure %s.\n", infra.Name)
 		switch searchResult.Status {
 		case rohr.RUNNING, rohr.DEPLOYED, rohr.OBSOLETED:
 			return fmt.Errorf("Infrastructure %s cannot be created at this moment. Please check its current status first.", infra.Name)
 		default:
-			log.Println("Re-create existing infrastructure %s.", infra.Name)
+			log.Printf("Re-create existing infrastructure %s.\n", infra.Name)
 		}
 	} else {
 		archiveId := infraSvc.GetQuoinArchiveIdFromUri(infra.Quoin.ArchiveUri)
@@ -58,9 +58,6 @@ func (infraSvc InfrastructureService) CreateInfrastructure(infra *rohr.Infrastru
 		return err
 	}
 
-	if err := infraSvc.UpdateInfrastructureStatus(infra.Name, rohr.RUNNING); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -81,10 +78,6 @@ func (infraSvc InfrastructureService) DeleteInfrastructure(name string) error {
 
 	// Avoid NATS queue message size limit
 	infra.State = nil
-
-	if err := infraSvc.UpdateInfrastructureStatus(name, rohr.RUNNING); err != nil {
-		return err
-	}
 
 	if err := infraSvc.PublishMessageToQueue(rohr.DELETE_INFRA, infra); err != nil {
 		return err
@@ -120,6 +113,7 @@ func (infraSvc InfrastructureService) SubscribeAsyncProc(subject rohr.Subject, h
 		return err
 	}
 	// defer c.Close()
+	// To close connection by runtime.Goexit()
 	subject_s := string(subject)
 	if _, err := c.QueueSubscribe(subject_s, subject_s, handler); err != nil {
 		return err
@@ -135,7 +129,10 @@ func (infraSvc InfrastructureService) PublishMessageToQueue(subject rohr.Subject
 	}
 	defer c.Close()
 	subject_s := string(subject)
-	c.Publish(subject_s, infra)
+	if err := c.Publish(subject_s, infra); err != nil {
+		log.Println(err)
+		return err
+	}
 	log.Printf("Publish Infrastructure %s to infra queue %s.\n", infra.Name, subject_s)
 	return nil
 }
