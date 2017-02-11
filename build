@@ -2,6 +2,8 @@
 
 set -e
 
+ENVIRONMENT="${ENVIRONMENT:-DEV}"
+
 image_name="quay.io/concur_platform/rohr"
 if [ ! -z "$1" ]; then
   image_name=$1

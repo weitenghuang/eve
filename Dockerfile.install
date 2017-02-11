@@ -5,11 +5,18 @@ ENV PATH="$PATH:/opt/rohr/bin"
 
 WORKDIR "/opt/rohr"
 
-RUN mkdir bin
+RUN mkdir bin && mkdir dist
 
 COPY eve /opt/rohr/bin/eve
 
+COPY evectl /opt/rohr/bin/evectl
+
 COPY terraform /opt/rohr/bin/terraform
+
+COPY evectl_linux_amd64.zip /opt/rohr/dist
+COPY evectl_darwin_amd64.zip /opt/rohr/dist
+COPY evectl_windows_amd64.zip /opt/rohr/dist
+COPY evectl_SHA256SUMS /opt/rohr/dist
 
 RUN apk update \
  && apk --update add git
