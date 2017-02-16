@@ -20,7 +20,7 @@ services:
       - "$EVE_PORT:$EVE_PORT"
     env_file: .env
     volumes:
-      - ./ca:/opt/ca
+      - ./ca/certs:/opt/tls
     command: ["eve", "up"]
     links:
       - rethink

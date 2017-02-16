@@ -1,13 +1,15 @@
 package main
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr/cmd/evectl/command"
-	"os"
 )
 
 func main() {
-	if err := command.Execute(); err != nil {
+	cmd := command.NewRootCommand(os.Stdin, os.Stdout, os.Stderr)
+	if err := cmd.Execute(); err != nil {
 		log.Fatalln(err)
 		os.Exit(-1)
 	}

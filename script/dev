@@ -41,10 +41,30 @@ VAULT_ADDR=http://${vault_fqdn}:${vault_port}" > ./.env
 }
 
 certgen() {
-  if [[ ! -z ./ca/ca-key.pem || ! -z ./ca/ca-pem ]]; then
-    pushd ./ca
-    cfssl genkey -initca csr.json | cfssljson -bare ca
-    popd
+  mkdir -p ca/certs
+
+  if [[ ! -f ./ca/certs/root-ca-key.pem || ! -f ./ca/certs/root-ca.pem ]]; then
+    cfssl gencert -initca ca/root-ca-csr.json | cfssljson -bare ca/certs/root-ca
+  fi
+
+  if [[ ! -f ./ca/certs/intermediate-ca-key.pem || ! -f ./ca/certs/intermediate-ca.pem ]]; then
+    cfssl gencert -ca="ca/certs/root-ca.pem" \
+      -ca-key="ca/certs/root-ca-key.pem" \
+      -config="ca/ca-config.json" \
+      -profile="intermediate-ca" \
+      ca/intermediate-ca-csr.json | cfssljson -bare ca/certs/intermediate-ca
+  fi
+
+  if [ ! -f ./ca/certs/ca-chain.pem ]; then
+    cat ca/certs/intermediate-ca.pem ca/certs/root-ca.pem > ca/certs/ca-chain.pem
+  fi
+
+  if [[ ! -f ./ca/certs/eve-server-key.pem || ! -f ./ca/certs/eve-server.pem ]]; then
+    cfssl gencert -ca="ca/certs/intermediate-ca.pem" \
+      -ca-key="ca/certs/intermediate-ca-key.pem" \
+      -config="ca/ca-config.json" \
+      -profile="eve-server" \
+      ca/eve-server-csr.json | cfssljson -bare ca/certs/eve-server
   fi
 }
 
@@ -130,7 +150,7 @@ clear_docker() {
   fi
   rm ./vault_credentials.json 2>&1
   rm -rf ./vault/data 2>&1
-  rm ./ca/ca* 2>&1
+  rm -rf ./ca/certs 2>&1
 }
 
 main() {

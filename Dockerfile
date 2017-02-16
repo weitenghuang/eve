@@ -14,16 +14,16 @@ RUN apk update
 RUN echo "===> Install build dependencies..." \
   && apk --update add curl jq git tar zip \
   && git config --global http.https://gopkg.in.followRedirects true \
-  && go get github.com/tools/godep
+  && go get github.com/Masterminds/glide
 
 WORKDIR "$GOPATH/src/$ROHR_PATH"
 COPY . "$GOPATH/src/$ROHR_PATH"
 
 RUN echo "===> Install ROHR project dependencies..." \
-  && godep restore
+  && glide install
 
 RUN echo "===> Run ROHR unit tests..." \
-  && go test -v $(go list github.com/concur/rohr/... | grep -v /vendor/)
+  && go test -v $(glide novendor)
 
 RUN echo "===> Build ROHR cmd package..." \
   && mkdir -p $GOPATH/src/$ROHR_PATH/artifacts \

@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 const (
@@ -62,13 +63,13 @@ func NewApiServerConfig() *ApiServerConfig {
 	if scheme == "" {
 		scheme = DEFAULT_SCHEME
 	}
-	certfile := os.Getenv("EVE_CERT")
+	certfile := os.Getenv("EVE_CERT_FILE")
 	if certfile == "" {
-		certfile = filepath.Join("/opt", "ca", "ca.pem")
+		certfile = filepath.Join("/opt", "tls", "eve-server.pem")
 	}
-	keyfile := os.Getenv("EVE_KEY")
+	keyfile := os.Getenv("EVE_KEY_FILE")
 	if keyfile == "" {
-		keyfile = filepath.Join("/opt", "ca", "ca-key.pem")
+		keyfile = filepath.Join("/opt", "tls", "eve-server-key.pem")
 	}
 	hostname, _ := os.Hostname()
 	return &ApiServerConfig{

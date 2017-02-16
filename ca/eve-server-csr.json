@@ -1,0 +1,20 @@
+{
+  "CN": "eve-server",
+  "hosts": [
+    "eve",
+    "localhost"
+  ],
+  "key": {
+    "algo": "rsa",
+    "size": 4096
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "Bellevue",
+      "O": "Concur",
+      "OU": "Platform R&D",
+      "ST": "Washington"
+    }
+  ]
+}

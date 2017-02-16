@@ -42,6 +42,7 @@ func (db *DbSession) tableInit() error {
 		return err
 	}
 	tables := map[string]byte{
+		PROVIDER_TABLE:      0,
 		QUOIN_TABLE:         0,
 		QUOIN_ARCHIVE_TABLE: 0,
 		INFRA_TABLE:         0,

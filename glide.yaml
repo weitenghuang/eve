@@ -1,0 +1,90 @@
+package: github.com/concur/rohr
+import:
+- package: github.com/Sirupsen/logrus
+  version: 081307d9bc1364753142d5962fc1d795c742baaf
+- package: github.com/cenkalti/backoff
+  version: b02f2bbce11d7ea6b97f282ef1771b0fe2f65ef3
+- package: github.com/fatih/structs
+  version: a720dfa8df582c51dee1b36feabb906bde1588bd
+- package: github.com/golang/protobuf
+  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  subpackages:
+  - proto
+- package: github.com/hailocab/go-hostpool
+  version: e80d13ce29ede4452c43dea11e79b9bc8a15b478
+- package: github.com/hashicorp/errwrap
+  version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
+- package: github.com/hashicorp/go-cleanhttp
+  version: 3573b8b52aa7b37b9358d966a898feb387f62437
+- package: github.com/hashicorp/go-multierror
+  version: ed905158d87462226a13fe39ddf685ea65f1c11f
+- package: github.com/hashicorp/go-rootcerts
+  version: 6bb64b370b90e7ef1fa532be9e591a81c3493e00
+- package: github.com/hashicorp/hcl
+  version: 630949a3c5fa3c613328e1b8256052cbc2327c9b
+  subpackages:
+  - hcl/ast
+  - hcl/parser
+  - hcl/scanner
+  - hcl/strconv
+  - hcl/token
+  - json/parser
+  - json/scanner
+  - json/token
+- package: github.com/hashicorp/vault
+  version: 14e815eedecb824e86ca6cb512724840d6002ef0
+  subpackages:
+  - api
+  - helper/compressutil
+  - helper/jsonutil
+- package: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- package: github.com/julienschmidt/httprouter
+  version: 4563b0ba73e4db6c6423b60a26f3cadd2e9a1ec9
+- package: github.com/mitchellh/go-homedir
+  version: b8bc1bf767474819792c23f32d8286a45736f1c6
+- package: github.com/mitchellh/mapstructure
+  version: db1efb556f84b25a0a13a04aad883943538ad2e0
+- package: github.com/nats-io/go-nats
+  version: d3ba8c5599d8b24448dfc251ab7b1f7f4c8d3d9d
+  subpackages:
+  - encoders/builtin
+  - util
+- package: github.com/nats-io/nuid
+  version: ^1.0.0
+- package: github.com/pborman/uuid
+  version: 5007efa264d92316c43112bc573e754bc889b7b1
+- package: github.com/sethgrid/pester
+  version: 2c5fb962da6113d0968907fd81dba3ca35151d1c
+- package: github.com/spf13/cobra
+  version: dc208f4211e7f6df7ec8cb62640f57d3e154910d
+- package: github.com/spf13/pflag
+  version: a232f6d9f87afaaa08bafaff5da685f974b83313
+- package: golang.org/x/crypto
+  version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
+  subpackages:
+  - pbkdf2
+- package: golang.org/x/sys
+  version: f64b50fbea64174967a8882830d621a18ee1548e
+  subpackages:
+  - unix
+- package: gopkg.in/fatih/pool.v2
+  version: 20a0a429c5f93de45c90f5f09ea297c25e0929b3
+- package: gopkg.in/gorethink/gorethink.v3
+  version: ^3.0.1
+  subpackages:
+  - encoding
+  - ql2
+  - types
+- package: github.com/aws/aws-sdk-go
+  version: ^1.7.9
+  subpackages:
+  - aws
+  - aws/credentials
+  - aws/credentials/stscreds
+  - aws/session
+  - service/sts
+- package: github.com/go-ini/ini
+  version: ^1.25.5
+- package: github.com/tj/go-prompt
+  version: 0d6b6628b949eeb2e85fd0ab97152656cd3d2d0e

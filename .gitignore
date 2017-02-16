@@ -1,7 +1,8 @@
 .env
+.envrc
 .devpassword
 vendor/
 rethinkdb_data/
 vault_*.json
 vault/data
-ca/ca*
+ca/certs/

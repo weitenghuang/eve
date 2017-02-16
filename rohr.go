@@ -90,3 +90,18 @@ const (
 	CREATE_INFRA Subject = "create-infra"
 	DELETE_INFRA Subject = "delete-infra"
 )
+
+type ProviderService interface {
+	GetProvider(name string) (*Provider, error)
+}
+
+type Provider struct {
+	Id     string `json:id,omitempty`
+	Name   string `json:name`
+	Schema Schema
+}
+
+type Schema struct {
+	Type string      `json:type`
+	Data interface{} `json:data`
+}

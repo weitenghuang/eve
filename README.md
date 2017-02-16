@@ -74,3 +74,31 @@ evectl status your_infrastructure_name
 ```sh
 evectl state your_infrastructure_name
 ```
+
+Using evectl
+------------
+
+## Prerequisites
+
+- Follow the getting started section above for starting rohr
+- In a separate terminal:
+  - Make sure you clear your AWS environment variables if they're set
+  - Using environment variables or `aws configure`, set AWS access key and secret to your credentials
+  - Run `make build`
+  - Set the following environment variables:
+    - export EVECTL_CA_FILE=$PWD/ca/certs/ca-chain.pem
+    - export EVECTL_USERNAME=devop
+    - source "$PWD/.devpassword" && export EVECTL_PASSWORD=${devop_pwd}
+  - An optional environment variable if you do not want to verify TLS:
+    - export EVECTL_TLS_NOVERIFY=true
+- Launch a browser and navigate to: http://localhost:8080 and seed the provider table
+  - There will be a bootstrap command to do this for us soon
+
+## Provider Authentication
+
+To authenticate against a provider, run the following command. You will then be greeted with questions.
+
+```shell
+$ source .envrc
+$ evectl authenticate aws
+```
