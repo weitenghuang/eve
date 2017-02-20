@@ -42,6 +42,18 @@ func (h *HealthService) GetHealth() *rohr.HealthInfo {
 		errors = append(errors, *err)
 	}
 
+	vaultChecker, err := health.NewVaultChecker()
+	if err != nil {
+		errors = append(errors, *err)
+	} else {
+		if err := vaultChecker.InitStatus(); err != nil {
+			errors = append(errors, *err)
+		}
+		if err := vaultChecker.SealStatus(); err != nil {
+			errors = append(errors, *err)
+		}
+	}
+
 	if len(errors) > 0 {
 		healthInfo.Errors = errors
 	}

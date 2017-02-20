@@ -1,3 +1,5 @@
 .env
 vendor/
 rethinkdb_data/
+vault_*.json
+vault/data

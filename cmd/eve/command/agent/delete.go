@@ -56,7 +56,8 @@ func delete(infraSvc rohr.InfrastructureService, stateServer *http.ApiServer) ro
 		log.Println("Infrastructure", infra.Name, "gets Quoin Archive:", id, quoinArchive.QuoinName)
 		varfile := createVarFile(infra.Variables)
 		remoteState := stateEndpoint(stateServer, infra.Name)
-		if err := terraform.DeleteQuoin(infra.Name, quoinArchive.Modules, varfile, remoteState); err != nil {
+		tf := terraform.NewTerraform(infra.Name, remoteState, quoinArchive.Modules, varfile)
+		if err := tf.DeleteQuoin(); err != nil {
 			toFailStatus(infra.Name)
 			log.Println(err)
 			return

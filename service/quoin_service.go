@@ -57,7 +57,8 @@ func (q QuoinService) CreateQuoin(quoin *rohr.Quoin) (*rohr.Quoin, error) {
 
 // CreateQuoinArchive creates Quoin archive record on database
 func (q QuoinService) CreateQuoinArchive(quoinArchive *rohr.QuoinArchive) error {
-	if err := terraform.PlanQuoin(quoinArchive.QuoinName, quoinArchive.Modules); err != nil {
+	tf := terraform.NewTerraform(quoinArchive.QuoinName, "", quoinArchive.Modules, nil)
+	if err := tf.PlanQuoin(); err != nil {
 		return err
 	}
 	log.Printf("Quoin Archive for %s is valid. Terraform plan has been generated.", quoinArchive.QuoinName)

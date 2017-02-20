@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"github.com/concur/rohr/pkg/vault"
 	"github.com/pborman/uuid"
 	"io"
 	"io/ioutil"
@@ -23,74 +24,94 @@ const (
 	DIR_CONFLICT           = "Directory conflict: "
 	MAX_RETRY              = 15
 	PERM                   = 0755
+	PROVIDER_TEMPLATE      = `provider "aws" {
+	access_key = "%s"
+	secret_key = "%s"
+	token = "%s"
+  region = "%s"
+  max_retries = 3
+}
+`
 )
 
-func PlanQuoin(name string, tarGz []byte) error {
-	log.Println("Prepare work directory.")
-	dir := setWorkDir(name, 0)
-	log.Println(dir)
-	defer os.RemoveAll(dir)
+type Terraform struct {
+	name        string
+	dir         string
+	remoteState string
+	modules     []byte
+	varfile     []byte
+}
 
-	if err := writeFileFromTarGz(dir, tarGz, PERM); err != nil {
+func NewTerraform(name string, remoteState string, modules []byte, varfile []byte) *Terraform {
+	return &Terraform{
+		name:        name,
+		remoteState: remoteState,
+		modules:     modules,
+		varfile:     varfile,
+	}
+}
+
+func (tf *Terraform) PlanQuoin() error {
+	log.Println("Prepare work directory.")
+	tf.dir = setWorkDir(tf.name, 0)
+	log.Println(tf.dir)
+	defer os.RemoveAll(tf.dir)
+
+	if err := tf.writeFileFromTarGz(PERM); err != nil {
 		return err
 	}
-	if _, err := runTerraformPlan(dir, fmt.Sprintf("%s%s", name, ".tfplan")); err != nil {
+
+	if _, err := tf.runTerraformPlan(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func ApplyQuoin(name string, modules []byte, varfile []byte, remoteState string) error {
+func (tf *Terraform) ApplyQuoin() error {
 	log.Println("Prepare work directory.")
-	dir := setWorkDir(name, 0)
-	log.Println(dir)
-	defer os.RemoveAll(dir)
+	tf.dir = setWorkDir(tf.name, 0)
+	log.Println(tf.dir)
+	defer os.RemoveAll(tf.dir)
 
-	if err := writeFileFromTarGz(dir, modules, PERM); err != nil {
+	if err := tf.writeFileFromTarGz(PERM); err != nil {
 		return err
 	}
 
-	if varfile != nil {
-		log.Println("Create var file.")
-		if err := ioutil.WriteFile(filepath.Join(dir, CUSTOM_VAR_FILE), varfile, PERM); err != nil {
-			return err
-		}
-	}
-
-	log.Println("remote state:", remoteState)
-	if err := runTerraformRemote(dir, remoteState); err != nil {
+	if err := tf.writeVarFile(); err != nil {
 		return err
 	}
 
-	if err := runTerraform(dir, "apply"); err != nil {
+	log.Println("remote state:", tf.remoteState)
+	if err := tf.runTerraformRemote(); err != nil {
+		return err
+	}
+
+	if err := tf.runTerraform("apply"); err != nil {
 		return err
 	}
 	return nil
 }
 
-func DeleteQuoin(name string, modules []byte, varfile []byte, remoteState string) error {
+func (tf *Terraform) DeleteQuoin() error {
 	log.Println("Prepare work directory.")
-	dir := setWorkDir(name, 0)
-	log.Println(dir)
-	defer os.RemoveAll(dir)
+	tf.dir = setWorkDir(tf.name, 0)
+	log.Println(tf.dir)
+	defer os.RemoveAll(tf.dir)
 
-	if err := writeFileFromTarGz(dir, modules, PERM); err != nil {
+	if err := tf.writeFileFromTarGz(PERM); err != nil {
 		return err
 	}
 
-	if varfile != nil {
-		log.Println("Create var file.")
-		if err := ioutil.WriteFile(filepath.Join(dir, CUSTOM_VAR_FILE), varfile, PERM); err != nil {
-			return err
-		}
-	}
-
-	log.Println("remote state:", remoteState)
-	if err := runTerraformRemote(dir, remoteState); err != nil {
+	if err := tf.writeVarFile(); err != nil {
 		return err
 	}
 
-	if err := runTerraform(dir, "destroy"); err != nil {
+	log.Println("remote state:", tf.remoteState)
+	if err := tf.runTerraformRemote(); err != nil {
+		return err
+	}
+
+	if err := tf.runTerraform("destroy"); err != nil {
 		return err
 	}
 	return nil
@@ -121,8 +142,8 @@ func setWorkDir(name string, retry int) (dir string) {
 	return dir
 }
 
-func writeFileFromTarGz(dir string, tarGz []byte, perm os.FileMode) error {
-	r := bytes.NewReader(tarGz)
+func (tf *Terraform) writeFileFromTarGz(perm os.FileMode) error {
+	r := bytes.NewReader(tf.modules)
 	gzf, err := gzip.NewReader(r)
 	defer gzf.Close()
 	if err != nil {
@@ -130,7 +151,7 @@ func writeFileFromTarGz(dir string, tarGz []byte, perm os.FileMode) error {
 	}
 	tr := tar.NewReader(gzf)
 
-	if err = os.MkdirAll(dir, perm); err != nil {
+	if err = os.MkdirAll(tf.dir, perm); err != nil {
 		return err
 	}
 	for {
@@ -142,7 +163,7 @@ func writeFileFromTarGz(dir string, tarGz []byte, perm os.FileMode) error {
 			return err
 		}
 		info := hdr.FileInfo()
-		path := filepath.Join(dir, hdr.Name)
+		path := filepath.Join(tf.dir, hdr.Name)
 		if info.IsDir() {
 			if err = os.MkdirAll(path, info.Mode()); err != nil {
 				return err
@@ -158,15 +179,15 @@ func writeFileFromTarGz(dir string, tarGz []byte, perm os.FileMode) error {
 		if err != nil {
 			return err
 		}
-		log.Printf("File %s is created at %s\n", hdr.Name, dir)
+		log.Printf("File %s is created at %s\n", hdr.Name, tf.dir)
 	}
 	return nil
 }
 
-func runTerraformGet(dir string) error {
+func (tf *Terraform) runTerraformGet() error {
 	var outBuf, errorBuf bytes.Buffer
 	getCommand := exec.Command(TERRAFORM_PROCESS_NAME, "get")
-	getCommand.Dir = dir
+	getCommand.Dir = tf.dir
 	getCommand.Stdout = &outBuf
 	getCommand.Stderr = &errorBuf
 	if err := getCommand.Start(); err != nil {
@@ -185,22 +206,28 @@ func runTerraformGet(dir string) error {
 	return nil
 }
 
-func runTerraformPlan(dir string, tfplan string) ([]byte, error) {
-	if err := runTerraformGet(dir); err != nil {
+func (tf *Terraform) runTerraformPlan() ([]byte, error) {
+	tfplan := fmt.Sprintf("%s%s", tf.name, ".tfplan")
+	if err := tf.runTerraformGet(); err != nil {
 		return nil, err
 	}
 
 	var outBuf, errorBuf bytes.Buffer
-	varFile := filepath.Join(dir, "/terraform.tfvars")
+	varFile := filepath.Join(tf.dir, "/terraform.tfvars")
 	varFileArg := filepath.Join("-var-file=", varFile)
-	stateFile := filepath.Join(dir, DEFAULT_STATE_FILE)
+	stateFile := filepath.Join(tf.dir, DEFAULT_STATE_FILE)
 	stateFileArg := filepath.Join("-state=", stateFile)
-	outFile := filepath.Join(dir, tfplan)
+	outFile := filepath.Join(tf.dir, tfplan)
 	outArg := filepath.Join("-out=", outFile)
 	planCommand := exec.Command(TERRAFORM_PROCESS_NAME, "plan", varFileArg, stateFileArg, outArg)
-	planCommand.Dir = dir
+	planCommand.Dir = tf.dir
 	planCommand.Stdout = &outBuf
 	planCommand.Stderr = &errorBuf
+	awsEnv, err := addAWSCredEnv(planCommand.Env, "secret/quoin/providers/aws/credentials")
+	if err != nil {
+		log.Println("Command loads env with error:", err)
+	}
+	planCommand.Env = awsEnv
 	if err := planCommand.Start(); err != nil {
 		log.Println("Command starts with error:", err)
 		return nil, err
@@ -223,18 +250,17 @@ func runTerraformPlan(dir string, tfplan string) ([]byte, error) {
 	return nil, fmt.Errorf("Terraform plan executed with empty output: %s", errorBuf.String())
 }
 
-func runTerraformRemote(dir string, address string) error {
+func (tf *Terraform) runTerraformRemote() error {
 	var outBuf, errorBuf bytes.Buffer
 	var argvs []string
 	argvs = append(argvs, "remote")
 	argvs = append(argvs, "config")
 	argvs = append(argvs, "-backend=http")
 	argvs = append(argvs, "-backend-config")
-	// argvs = append(argvs, "address=http://localhost:8088/infrastructure/myvpc/state")
-	argvs = append(argvs, fmt.Sprint("address=", address))
+	argvs = append(argvs, fmt.Sprint("address=", tf.remoteState))
 	log.Printf("argvs: %#v", argvs)
 	planCommand := exec.Command(TERRAFORM_PROCESS_NAME, argvs...)
-	planCommand.Dir = dir
+	planCommand.Dir = tf.dir
 	planCommand.Stdout = &outBuf
 	planCommand.Stderr = &errorBuf
 	if err := planCommand.Start(); err != nil {
@@ -251,8 +277,8 @@ func runTerraformRemote(dir string, address string) error {
 	return nil
 }
 
-func runTerraform(dir string, action string) error {
-	if err := runTerraformGet(dir); err != nil {
+func (tf *Terraform) runTerraform(action string) error {
+	if err := tf.runTerraformGet(); err != nil {
 		return err
 	}
 
@@ -262,16 +288,18 @@ func runTerraform(dir string, action string) error {
 	if action == "destroy" {
 		argvs = append(argvs, "-force")
 	}
-	varFile := filepath.Join(dir, CUSTOM_VAR_FILE)
+	varFile := filepath.Join(tf.dir, CUSTOM_VAR_FILE)
 	varFileArg := filepath.Join("-var-file=", varFile)
 	argvs = append(argvs, varFileArg)
-	// stateFile := filepath.Join(dir, DEFAULT_STATE_FILE)
-	// stateFileArg := filepath.Join("-state=", stateFile)
-	// argvs = append(argvs, stateFileArg)
 	planCommand := exec.Command(TERRAFORM_PROCESS_NAME, argvs...)
-	planCommand.Dir = dir
+	planCommand.Dir = tf.dir
 	planCommand.Stdout = &outBuf
 	planCommand.Stderr = &errorBuf
+	awsEnv, err := addAWSCredEnv(planCommand.Env, "secret/quoin/providers/aws/credentials")
+	if err != nil {
+		log.Println("Command loads env with error:", err)
+	}
+	planCommand.Env = awsEnv
 	if err := planCommand.Start(); err != nil {
 		log.Println("Command starts with error:", err)
 		return err
@@ -288,4 +316,36 @@ func runTerraform(dir string, action string) error {
 		return nil
 	}
 	return fmt.Errorf("Terraform plan executed with empty output: %s", errorBuf.String())
+}
+
+func (tf *Terraform) writeVarFile() error {
+	if tf.varfile == nil {
+		return nil
+	}
+
+	log.Println("Create var file.")
+	if err := ioutil.WriteFile(filepath.Join(tf.dir, CUSTOM_VAR_FILE), tf.varfile, PERM); err != nil {
+		return err
+	}
+	return nil
+}
+
+func addAWSCredEnv(env []string, secretPath string) ([]string, error) {
+	// secretPath := "secret/quoin/providers/aws/credentials"
+	awsCred, err := vault.GetLogicalData(secretPath)
+	if err != nil {
+		return nil, err
+	}
+	awsKey := "AWS_ACCESS_KEY_ID"
+	awsSecret := "AWS_SECRET_ACCESS_KEY"
+	awsToken := "AWS_SESSION_TOKEN"
+	if len(env) == 0 {
+		env = os.Environ()
+	}
+	awsEnv := append(env,
+		fmt.Sprintf("%s=%s", awsKey, awsCred[awsKey]),
+		fmt.Sprintf("%s=%s", awsSecret, awsCred[awsSecret]),
+		fmt.Sprintf("%s=%s", awsToken, awsCred[awsToken]),
+	)
+	return awsEnv, nil
 }

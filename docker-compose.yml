@@ -43,3 +43,7 @@ services:
     command: ["eve", "db", "init"]
     links:
       - rethink
+networks:
+  default:
+    external:
+      name: rohr_network

@@ -8,10 +8,9 @@ WORKDIR "/opt/rohr"
 RUN mkdir bin && mkdir dist
 
 COPY eve /opt/rohr/bin/eve
-
 COPY evectl /opt/rohr/bin/evectl
-
 COPY terraform /opt/rohr/bin/terraform
+COPY docker-entrypoint.sh /opt/rohr/bin/entrypoint.sh
 
 COPY evectl_linux_amd64.zip /opt/rohr/dist
 COPY evectl_darwin_amd64.zip /opt/rohr/dist
@@ -20,5 +19,7 @@ COPY evectl_SHA256SUMS /opt/rohr/dist
 
 RUN apk update \
  && apk --update add git
+
+ENTRYPOINT ["/opt/rohr/bin/entrypoint.sh"]
 
 CMD ["eve"]

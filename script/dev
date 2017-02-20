@@ -1,4 +1,12 @@
 #!/usr/bin/env bash
+set -x
+
+export EVE_DB_PORT=28015
+export EVE_QUEUE_PORT=4222
+export EVE_PORT=8088
+
+vault_fqdn="rohr_vault"
+vault_port=8200
 
 usage() {
     echo "
@@ -6,7 +14,7 @@ usage: dev <command> [<args>]
 
 Some useful commands are:
 env       Generate default environment values in .env on current directory
-build     Build eve development docker image
+rebuild   Re-build eve development docker image
 up        Start project's docker-compose
 down      Down project's docker-compose
 clear     Clean up docker container and remove eve docker image
@@ -14,9 +22,10 @@ clear     Clean up docker container and remove eve docker image
 }
 
 envgen() {
-  export EVE_DB_PORT=28015
-  export EVE_QUEUE_PORT=4222
-  echo "EVE_PORT=8088
+  vault_token="$(get_vault_token)"
+  echo "VERSION=v0.0.1
+ENVIRONMENT=DEV
+EVE_PORT=${EVE_PORT}
 EVE_DNS=eve
 EVE_SCHEME=http
 EVE_DB_PORT=${EVE_DB_PORT}
@@ -25,24 +34,81 @@ EVE_DB_NAME=eve
 EVE_QUEUE_PORT=${EVE_QUEUE_PORT}
 EVE_QUEUE_URL=nats://nats:${EVE_QUEUE_PORT}
 EVE_QUEUE_MAX_RECONNECT=450
-AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}" > ./.env
+VAULT_TOKEN=${vault_token}
+VAULT_ADDR=http://${vault_fqdn}:${vault_port}" > ./.env
+# AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+# AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+# AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+  echo ".env file is created at $PWD"
+}
+
+start_vault() {
+  echo "Start vault server..."
+  [ ! "$(docker ps | grep ${vault_fqdn})" ] && docker run --name "${vault_fqdn}" --cap-add IPC_LOCK --network=rohr_network --ip=172.16.238.128 -d -v $PWD/vault:/opt/etc/vault -p "${vault_port}:${vault_port}" quay.io/concur_platform/vault:0.6.4-5b34ba3 /opt/bin/vault server -config=/opt/etc/vault/dev.config -log-level=info
+  while [ $(http http://localhost:${vault_port}/v1/sys/health | jq -r '.version') != "0.6.4" ]; do
+    echo "vault is not ready, please wait..."
+    sleep 1
+  done
+  echo "Vault is running."
+  if [ ! -f "vault_credentials.json" ]; then
+    echo "Initialize vault..."
+    http PUT localhost:"${vault_port}"/v1/sys/init secret_shares:=1 secret_threshold:=1 > vault_credentials.json
+  fi
+  echo "Unseal vault..."
+  http PUT localhost:"${vault_port}"/v1/sys/unseal key="$(cat vault_credentials.json | jq -r '.keys[0]')"
+}
+
+get_vault_token() {
+  local root_token="$(cat vault_credentials.json | jq -r '.root_token')"
+  echo "${root_token}"
+}
+
+store_aws_secret_to_vault() {
+  local token=$(get_vault_token)
+  cat <<END | http POST localhost:"${vault_port}"/v1/secret/quoin/providers/aws/credentials X-Vault-Token:"${token}"
+{
+  "AWS_ACCESS_KEY_ID":"${AWS_ACCESS_KEY_ID}",
+  "AWS_SECRET_ACCESS_KEY":"${AWS_SECRET_ACCESS_KEY}",
+  "AWS_SESSION_TOKEN":"${AWS_SESSION_TOKEN}"
+}
+END
+  #debug: echo $(http GET localhost:"${vault_port}"/v1/secret/quoin/providers/aws/credentials X-Vault-Token:$(get_vault_token)) | jq .
+}
+
+down_docker() {
+  docker-compose down
+  docker stop rohr_vault &>/dev/null
+  docker rm rohr_vault &>/dev/null
+  docker network rm rohr_network &>/dev/null
+  if [ -f ./.env ]; then
+    rm ./.env
+  fi
+}
+
+clear_docker() {
+  docker rm `docker ps -q -f status=exited` &>/dev/null
+  docker rmi `docker images -f "dangling=true" -q` &>/dev/null
+  docker volume rm `docker volume ls -q` &>/dev/null
+  if [[ "$(docker images -q rohr_eve 2> /dev/null)" != "" ]]; then
+    docker rmi rohr_eve
+  fi
+  rm ./vault_credentials.json 2>&1
+  rm -rf ./vault/data 2>&1
 }
 
 main() {
   command="$1"
   case $command in
-    "" | "-h" | "--help")
-      usage
-      ;;
     "env")
       envgen
       ;;
-    "build")
+    "rebuild")
       docker-compose build eve
       ;;
     "up")
+      [ ! "$(docker network ls | grep rohr_network)" ] && docker network create rohr_network --subnet 172.16.238.0/24 --gateway 172.16.238.1
+      start_vault
+      store_aws_secret_to_vault
       if [ ! -f ./.env ]; then
         echo "Generating .env"
         envgen
@@ -53,20 +119,18 @@ main() {
       docker-compose up
       ;;
     "down")
-      docker-compose down
+      down_docker
       ;;
     "clear")
-      docker rm `docker ps -q -f status=exited` &>/dev/null
-      docker rmi `docker images -f "dangling=true" -q` &>/dev/null
-      docker volume rm `docker volume ls -q` &>/dev/null
-      if [[ "$(docker images -q rohr_eve 2> /dev/null)" != "" ]]; then
-        docker rmi rohr_eve
-      fi
-      if [ -f ./.env ]; then
-        rm ./.env
-      fi
+      down_docker
+      clear_docker
+      ;;
+    "" | "-h" | "--help" | *)
+      usage
       ;;
   esac
 }
 
 main "$@"
+
+set +x

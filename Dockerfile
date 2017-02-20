@@ -1,4 +1,4 @@
-FROM golang:1.6-alpine
+FROM golang:1.8.0-alpine
 MAINTAINER Concur Platform R&D <platform-engineering@concur.com>
 
 ENV GOPATH="/go"
@@ -12,10 +12,8 @@ RUN mkdir -p /opt/bin && mkdir -p /opt/dist
 RUN apk update
 
 RUN echo "===> Install build dependencies..." \
-  && apk --update add --virtual build-dependencies curl jq \
-  && apk --update add git \
-  && apk --update add tar \
-  && apk --update add zip \
+  && apk --update add curl jq git tar zip \
+  && git config --global http.https://gopkg.in.followRedirects true \
   && go get github.com/tools/godep
 
 WORKDIR "$GOPATH/src/$ROHR_PATH"
@@ -25,7 +23,7 @@ RUN echo "===> Install ROHR project dependencies..." \
   && godep restore
 
 RUN echo "===> Run ROHR unit tests..." \
-  && go test -v github.com/concur/rohr/...
+  && go test -v $(go list github.com/concur/rohr/... | grep -v /vendor/)
 
 RUN echo "===> Build ROHR cmd package..." \
   && mkdir -p $GOPATH/src/$ROHR_PATH/artifacts \
@@ -64,10 +62,6 @@ RUN echo "===> Installing Terraform..." \
   && unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt/bin \
   && rm -f terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 
-RUN echo "===> Removing build dependencies..." \
-  && apk del build-dependencies \
-  && rm -rf /var/cache/apk/*
-
 ENTRYPOINT ["/go/src/github.com/concur/rohr/docker-entrypoint.sh"]
 
-CMD ["tar", "-cvf", "-", "-C", "/go/src/github.com/concur/rohr", "Dockerfile.install", "-C", "/opt/bin", "eve", "-C", "/opt/bin", "evectl", "-C", "/opt/bin", "terraform", "-C", "/opt/dist", "evectl_darwin_amd64.zip", "-C", "/opt/dist", "evectl_windows_amd64.zip", "-C", "/opt/dist", "evectl_linux_amd64.zip", "-C", "/opt/dist", "evectl_SHA256SUMS"]
+CMD ["tar", "-cvf", "-", "-C", "/go/src/github.com/concur/rohr", "Dockerfile.install", "-C", "/go/src/github.com/concur/rohr", "docker-entrypoint.sh", "-C", "/opt/bin", "eve", "-C", "/opt/bin", "evectl", "-C", "/opt/bin", "terraform", "-C", "/opt/dist", "evectl_darwin_amd64.zip", "-C", "/opt/dist", "evectl_windows_amd64.zip", "-C", "/opt/dist", "evectl_linux_amd64.zip", "-C", "/opt/dist", "evectl_SHA256SUMS"]

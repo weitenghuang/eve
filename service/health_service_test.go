@@ -18,6 +18,7 @@ func TestHealthService_New(t *testing.T) {
 }
 
 func TestHealthService_GetHealth(t *testing.T) {
+	errCount := 6
 	sysConfig := config.NewSystemConfig()
 	mock_healthInfo := &rohr.HealthInfo{
 		Hostname: sysConfig.Hostname,
@@ -25,17 +26,17 @@ func TestHealthService_GetHealth(t *testing.T) {
 			"Version":     sysConfig.Version,
 			"Environment": sysConfig.Environment,
 		},
-		Errors: make([]rohr.Error, 4),
+		Errors: make([]rohr.Error, errCount),
 		Uptime: "",
 	}
 
 	healthInfo := healthService.GetHealth()
 
 	if len(healthInfo.Uptime) == len(mock_healthInfo.Uptime) {
-		t.Errorf("HealthInfo Uptime should not be empty string")
+		t.Errorf("HealthInfo Uptime should not be empty string. Uptime: %v", healthInfo.Uptime)
 	}
 	if len(healthInfo.Errors) != len(mock_healthInfo.Errors) {
-		t.Errorf("HealthInfo should report 4 errors when none of dependencies is available")
+		t.Errorf("HealthInfo should report %v errors when none of dependencies is available. Errors: %#v", errCount, healthInfo.Errors)
 	}
 	if !reflect.DeepEqual(healthInfo.Metadata, mock_healthInfo.Metadata) {
 		t.Errorf("Unexpected healthInfo metadata value: %#v", healthInfo.Metadata)

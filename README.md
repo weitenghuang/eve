@@ -35,7 +35,7 @@ You can use `ctl+c`, or use another shell session then run following command
 
 - Build eve docker development image:
 ```sh
-./script/dev build
+./script/dev rebuild
 ```
 
 - Generate/Update required environment variables:
