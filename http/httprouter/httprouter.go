@@ -2,10 +2,10 @@ package httprouter
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr/http"
 	"github.com/concur/rohr/service"
 	"github.com/julienschmidt/httprouter"
-	"log"
 )
 
 const (
@@ -34,29 +34,33 @@ func NewRouter() *Router {
 }
 
 func (r *Router) RegisterRoute(apiServer *http.ApiServer) http.Handler {
-	log.Println("Register route handlers for httprouter:")
+	if r.httpRouter == nil {
+		log.Panicln("API server's router misses httprouter field value.")
+	}
+
+	log.Infoln("Register route handlers for httprouter:")
 	healthService := service.NewHealthService()
 	quoinService := &service.QuoinService{}
 	infrastructureService := &service.InfrastructureService{}
 	r.httpRouter.GET(HEALTH_PATH, GetHealthHandler(healthService))
-	log.Println("GET", HEALTH_PATH, "with GetHealthHandler")
+	log.Infoln("GET", HEALTH_PATH, "with GetHealthHandler")
 	r.httpRouter.GET(QUOIN_NAME_PATH, GetQuoinHandler(quoinService))
-	log.Println("GET", QUOIN_NAME_PATH, "with GetQuoinHandler")
+	log.Infoln("GET", QUOIN_NAME_PATH, "with GetQuoinHandler")
 	r.httpRouter.GET(INFRA_NAME_PATH, GetInfraHandler(infrastructureService))
-	log.Println("GET", INFRA_NAME_PATH, "with GetInfraHandler")
+	log.Infoln("GET", INFRA_NAME_PATH, "with GetInfraHandler")
 	r.httpRouter.GET(INFRA_NAME_STATE_PATH, GetInfraStateHandler(infrastructureService))
-	log.Println("GET", INFRA_NAME_STATE_PATH, "with GetInfraStateHandler")
+	log.Infoln("GET", INFRA_NAME_STATE_PATH, "with GetInfraStateHandler")
 	r.httpRouter.POST(QUOIN_PATH, PostQuoinHandler(quoinService, apiServer))
-	log.Println("POST", QUOIN_PATH, "with PostQuoinHandler")
+	log.Infoln("POST", QUOIN_PATH, "with PostQuoinHandler")
 	r.httpRouter.POST(QUOIN_ARCHIVE_PATH, PostQuoinArchiveHandler(quoinService))
-	log.Println("POST", QUOIN_ARCHIVE_PATH, "with PostQuoinArchiveHandler")
+	log.Infoln("POST", QUOIN_ARCHIVE_PATH, "with PostQuoinArchiveHandler")
 	r.httpRouter.POST(INFRA_PATH, PostInfraHandler(infrastructureService))
-	log.Println("POST", INFRA_PATH, "with PostInfraHandler")
+	log.Infoln("POST", INFRA_PATH, "with PostInfraHandler")
 	r.httpRouter.POST(INFRA_NAME_STATE_PATH, PostInfraStateHandler(infrastructureService))
-	log.Println("POST", INFRA_NAME_STATE_PATH, "with PostInfraStateHandler")
+	log.Infoln("POST", INFRA_NAME_STATE_PATH, "with PostInfraStateHandler")
 	r.httpRouter.DELETE(INFRA_NAME_PATH, DeleteInfraHandler(infrastructureService))
-	log.Println("DELETE", INFRA_NAME_PATH, "with DeleteInfraHandler")
+	log.Infoln("DELETE", INFRA_NAME_PATH, "with DeleteInfraHandler")
 	r.httpRouter.DELETE(INFRA_NAME_STATE_PATH, DeleteInfraStateHandler(infrastructureService))
-	log.Println("DELETE", INFRA_NAME_STATE_PATH, "with DeleteInfraStateHandler")
+	log.Infoln("DELETE", INFRA_NAME_STATE_PATH, "with DeleteInfraStateHandler")
 	return r.httpRouter
 }

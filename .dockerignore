@@ -1,7 +1,9 @@
 .git
 .gitignore
 .env
+.devpassword
 vendor/
 vault/
 rethinkdb_data/
+ca/
 README.md

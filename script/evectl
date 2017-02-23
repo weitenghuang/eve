@@ -18,7 +18,7 @@ connect       Connect to \"platform-kubernete\" type of cluster infrastructure
 create_quoin() {
   name="$1"
   echo -e "\e[93mRequest to create quoin $name ...\e[0m"
-  cat <<END | http -f POST http://localhost:8088/quoin Content-Type:"application/json" --verbose
+  cat <<END | http -a devop:${devop_pwd} --verify=no -f POST https://localhost:443/quoin Content-Type:"application/json" --verbose
 {
   "name": "$name"
 }
@@ -33,7 +33,7 @@ END
   fi
 
   echo -e "\n\e[93mUpload quoin tarball to server...\e[0m"
-  http -f POST http://localhost:8088/quoin/$name/upload Content-Type:"application/gzip" <quoin.tar.gz --verbose
+  http -a devop:${devop_pwd} --verify=no -f POST https://localhost:443/quoin/$name/upload Content-Type:"application/gzip" <quoin.tar.gz --verbose
 
   echo -e "\e[92mQuoin is created on eve server\e[0m"
 }
@@ -41,10 +41,10 @@ END
 create_infrastructure() {
   name="$1"
   quoin_name="$3"
-  quoin=$(http GET "http://localhost:8088/quoin/$quoin_name" --body --json)
+  quoin=$(http -a devop:${devop_pwd} --verify=no -f GET "https://localhost:443/quoin/$quoin_name" --body --json)
 
   echo -e "\e[93mRequest to create infrastructure $name...\e[0m"
-  cat <<END | http -f POST http://localhost:8088/infrastructure Content-Type:"application/json" --verbose
+  cat <<END | http -a devop:${devop_pwd} --verify=no -f POST https://localhost:443/infrastructure Content-Type:"application/json" --verbose
 {
     "name": "$name",
     "quoin": $quoin,
@@ -60,7 +60,7 @@ END
 delete_infrastructure() {
   name="$1"
   echo -e "\e[93mRequest to delete infrastructure $name...\e[0m"
-  http -f DELETE http://localhost:8088/infrastructure/$name Content-Type:"application/json" --verbose
+  http -a devop:${devop_pwd} --verify=no -f DELETE https://localhost:443/infrastructure/$name Content-Type:"application/json" --verbose
   echo -e "\e[92mRequest is accepted\e[0m"
 }
 
@@ -94,7 +94,7 @@ delete() {
 
 status() {
   name="$1"
-  status_num=$(http -f GET http://localhost:8088/infrastructure/$name --body --json|jq '.status')
+  status_num=$(http -a devop:${devop_pwd} --verify=no -f GET https://localhost:443/infrastructure/$name --body --json|jq '.status')
   status_print=""
   case $status_num in
     "2")
@@ -109,25 +109,31 @@ status() {
     "16")
       status_print="destroyed"
       ;;
+    "32")
+      status_print="obsoleted"
+      ;;
+    "64")
+      status_print="failed"
+      ;;
   esac
   echo $status_print
 }
 
 state() {
   name="$1"
-  status_num=$(http -f GET http://localhost:8088/infrastructure/$name --body --json|jq '.status')
+  status_num=$(http -a devop:${devop_pwd} --verify=no -f GET https://localhost:443/infrastructure/$name --body --json|jq '.status')
   if [ $status_num -eq 4 ]; then
     echo "eve server is processing your infrastructure request...\n"
     sleep 1
     state $name
   else
-    http -f GET http://localhost:8088/infrastructure/$name/state --body --json|jq '.'
+    http -a devop:${devop_pwd} --verify=no -f GET https://localhost:443/infrastructure/$name/state --body --json|jq '.'
   fi
 }
 
 connect() {
   name="$1"
-  servername=$(http -f GET http://localhost:8088/infrastructure/$name/state --body --json| jq -r '.modules[0].outputs.kubernetes_api_dns.value')
+  servername=$(http -a devop:${devop_pwd} --verify=no -f GET https://localhost:443/infrastructure/$name/state --body --json| jq -r '.modules[0].outputs.kubernetes_api_dns.value')
   kubectl config set-cluster $name --server=https://$servername --certificate-authority=ca-chain.pem
   kubectl config set-credentials "$name-admin" --certificate-authority=ca-chain.pem --client-key=admin-key.pem --client-certificate=admin.pem
   kubectl config set-context $name --cluster=$name --user="$name-admin"
@@ -137,6 +143,13 @@ connect() {
 
 main() {
   command="$1"
+
+  if [ -f "$GOPATH/src/github.com/concur/rohr/.devpassword" ]; then
+    source "$GOPATH/src/github.com/concur/rohr/.devpassword"
+  else
+    echo "Enter devop user password: "; read -s devop_pwd
+    export devop_pwd="${devop_pwd}"
+  fi
   case $command in
     "" | "-h" | "--help")
       usage

@@ -1,10 +1,10 @@
 package service
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr"
 	"github.com/concur/rohr/pkg/terraform"
 	"github.com/concur/rohr/service/rethinkdb"
-	"log"
 	"strings"
 )
 

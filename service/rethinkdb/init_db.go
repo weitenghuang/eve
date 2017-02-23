@@ -1,8 +1,8 @@
 package rethinkdb
 
 import (
+	log "github.com/Sirupsen/logrus"
 	r "gopkg.in/gorethink/gorethink.v3"
-	"log"
 )
 
 func (db *DbSession) Initialization() error {
@@ -53,7 +53,7 @@ func (db *DbSession) tableInit() error {
 			delete(tables, name)
 		}
 	}
-	for key, _ := range tables {
+	for key := range tables {
 		log.Println("Creating table:", key)
 		if _, err := r.DB(db.DbName).TableCreate(key, r.TableCreateOpts{PrimaryKey: "Id"}).RunWrite(db.Session); err != nil {
 			return err

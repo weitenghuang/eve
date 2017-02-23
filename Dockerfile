@@ -4,8 +4,8 @@ MAINTAINER Concur Platform R&D <platform-engineering@concur.com>
 ENV GOPATH="/go"
 ENV PATH="$PATH:$GOPATH/bin:/opt/bin"
 ENV ROHR_PATH="github.com/concur/rohr"
-ENV TERRAFORM_VERSION=0.7.8
-ENV TERRAFORM_SHA256SUM=b3394910c6a1069882f39ad590eead0414d34d5bd73d4d47fa44e66f53454b5a
+ENV TERRAFORM_VERSION=0.8.7
+ENV TERRAFORM_SHA256SUM=7ca424d8d0e06697cc7f492b162223aef525bfbcd69248134a0ce0b529285c8c
 
 RUN mkdir -p /opt/bin && mkdir -p /opt/dist
 

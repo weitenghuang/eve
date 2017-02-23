@@ -2,10 +2,10 @@ package service
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr"
 	"github.com/concur/rohr/service/nats"
 	"github.com/concur/rohr/service/rethinkdb"
-	"log"
 )
 
 type InfrastructureService struct {

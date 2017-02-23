@@ -2,9 +2,9 @@ package httprouter
 
 import (
 	"encoding/json"
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr"
 	"github.com/julienschmidt/httprouter"
-	"log"
 	"net/http"
 )
 

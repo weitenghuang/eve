@@ -19,6 +19,8 @@ services:
     ports:
       - "$EVE_PORT:$EVE_PORT"
     env_file: .env
+    volumes:
+      - ./ca:/opt/ca
     command: ["eve", "up"]
     links:
       - rethink

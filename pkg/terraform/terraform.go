@@ -5,11 +5,11 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr/pkg/vault"
 	"github.com/pborman/uuid"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -253,11 +253,20 @@ func (tf *Terraform) runTerraformPlan() ([]byte, error) {
 func (tf *Terraform) runTerraformRemote() error {
 	var outBuf, errorBuf bytes.Buffer
 	var argvs []string
+	//default user name: terraform
+	user, err := vault.GetLogicalData("secret/user/terraform")
+	if err != nil {
+		log.Println("Missing terraform user in vault:", err)
+		return err
+	}
 	argvs = append(argvs, "remote")
 	argvs = append(argvs, "config")
 	argvs = append(argvs, "-backend=http")
-	argvs = append(argvs, "-backend-config")
-	argvs = append(argvs, fmt.Sprint("address=", tf.remoteState))
+	// argvs = append(argvs, "-backend-config")
+	argvs = append(argvs, fmt.Sprint("-backend-config=address=", tf.remoteState))
+	argvs = append(argvs, fmt.Sprint("-backend-config=skip_cert_verification=true"))
+	argvs = append(argvs, fmt.Sprint("-backend-config=username=", user["name"]))
+	argvs = append(argvs, fmt.Sprint("-backend-config=password=", user["password"]))
 	log.Printf("argvs: %#v", argvs)
 	planCommand := exec.Command(TERRAFORM_PROCESS_NAME, argvs...)
 	planCommand.Dir = tf.dir

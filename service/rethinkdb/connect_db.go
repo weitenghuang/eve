@@ -1,9 +1,9 @@
 package rethinkdb
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr/pkg/config"
 	r "gopkg.in/gorethink/gorethink.v3"
-	"log"
 	"sync"
 )
 

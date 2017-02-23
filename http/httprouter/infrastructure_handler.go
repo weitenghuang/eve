@@ -3,9 +3,9 @@ package httprouter
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr"
 	"github.com/julienschmidt/httprouter"
-	"log"
 	"net/http"
 )
 
@@ -62,7 +62,14 @@ func GetInfraStateHandler(infraSvc rohr.InfrastructureService) httprouter.Handle
 		w.WriteHeader(http.StatusOK)
 		if len(state) == 0 {
 			return
-		} else if err := json.NewEncoder(w).Encode(state); err != nil {
+		} else {
+			// Terraform store user credentials on remote state server. We should propose the change to terraform
+			username, _, _ := r.BasicAuth()
+			if username != "terraform" && state["remote"] != nil {
+				delete(state, "remote")
+			}
+		}
+		if err := json.NewEncoder(w).Encode(state); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			log.Printf("Encoding infrastructure state returns error: %#v", err)
 			return

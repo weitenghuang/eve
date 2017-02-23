@@ -2,8 +2,9 @@ package config
 
 import (
 	"fmt"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -23,6 +24,8 @@ type ApiServerConfig struct {
 	DNS      string
 	Scheme   string
 	Hostname string
+	CertFile string
+	KeyFile  string
 }
 
 type RethinkDbConfig struct {
@@ -59,12 +62,22 @@ func NewApiServerConfig() *ApiServerConfig {
 	if scheme == "" {
 		scheme = DEFAULT_SCHEME
 	}
+	certfile := os.Getenv("EVE_CERT")
+	if certfile == "" {
+		certfile = filepath.Join("/opt", "ca", "ca.pem")
+	}
+	keyfile := os.Getenv("EVE_KEY")
+	if keyfile == "" {
+		keyfile = filepath.Join("/opt", "ca", "ca-key.pem")
+	}
 	hostname, _ := os.Hostname()
 	return &ApiServerConfig{
 		Port:     port,
 		DNS:      dns,
 		Scheme:   scheme,
 		Hostname: hostname,
+		CertFile: certfile,
+		KeyFile:  keyfile,
 	}
 }
 

@@ -3,11 +3,11 @@ package httprouter
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr"
 	rohrHttp "github.com/concur/rohr/http"
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 

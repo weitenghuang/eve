@@ -1,12 +1,12 @@
 package agent
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr"
 	"github.com/concur/rohr/http"
 	"github.com/concur/rohr/pkg/terraform"
 	"github.com/concur/rohr/service"
 	"github.com/spf13/cobra"
-	"log"
 	"runtime"
 )
 

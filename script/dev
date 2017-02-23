@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-set -x
+# set -x
 
 export EVE_DB_PORT=28015
 export EVE_QUEUE_PORT=4222
-export EVE_PORT=8088
+export EVE_PORT=443
 
 vault_fqdn="rohr_vault"
 vault_port=8200
+password_file=".devpassword"
 
 usage() {
     echo "
@@ -27,7 +28,7 @@ envgen() {
 ENVIRONMENT=DEV
 EVE_PORT=${EVE_PORT}
 EVE_DNS=eve
-EVE_SCHEME=http
+EVE_SCHEME=https
 EVE_DB_PORT=${EVE_DB_PORT}
 EVE_DB_URL=rethink:${EVE_DB_PORT}
 EVE_DB_NAME=eve
@@ -36,10 +37,15 @@ EVE_QUEUE_URL=nats://nats:${EVE_QUEUE_PORT}
 EVE_QUEUE_MAX_RECONNECT=450
 VAULT_TOKEN=${vault_token}
 VAULT_ADDR=http://${vault_fqdn}:${vault_port}" > ./.env
-# AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-# AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-# AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
   echo ".env file is created at $PWD"
+}
+
+certgen() {
+  if [[ ! -z ./ca/ca-key.pem || ! -z ./ca/ca-pem ]]; then
+    pushd ./ca
+    cfssl genkey -initca csr.json | cfssljson -bare ca
+    popd
+  fi
 }
 
 start_vault() {
@@ -64,6 +70,17 @@ get_vault_token() {
 }
 
 store_aws_secret_to_vault() {
+  local devop_pwd
+  local terraform_pwd
+  if [ -f "${password_file}" ]; then
+    source "${password_file}"
+  else
+    echo "Set devop user password: "; read -s devop_pwd
+    echo "devop_pwd=${devop_pwd}" >> "${password_file}"
+    echo "Set terraform user password: "; read -s terraform_pwd
+    echo "terraform_pwd=${terraform_pwd}" >> "${password_file}"
+  fi
+
   local token=$(get_vault_token)
   cat <<END | http POST localhost:"${vault_port}"/v1/secret/quoin/providers/aws/credentials X-Vault-Token:"${token}"
 {
@@ -73,6 +90,22 @@ store_aws_secret_to_vault() {
 }
 END
   #debug: echo $(http GET localhost:"${vault_port}"/v1/secret/quoin/providers/aws/credentials X-Vault-Token:$(get_vault_token)) | jq .
+
+  echo "devop password: ${devop_pwd}"
+  cat <<END | http -f POST localhost:"${vault_port}"/v1/secret/user/devop X-Vault-Token:"${token}"
+{
+  "name": "devop",
+  "password": "${devop_pwd}"
+}
+END
+
+  echo "terraform password: ${terraform_pwd}"
+  cat <<END | http -f POST localhost:"${vault_port}"/v1/secret/user/terraform X-Vault-Token:"${token}"
+{
+  "name": "terraform",
+  "password": "${terraform_pwd}"
+}
+END
 }
 
 down_docker() {
@@ -82,6 +115,9 @@ down_docker() {
   docker network rm rohr_network &>/dev/null
   if [ -f ./.env ]; then
     rm ./.env
+  fi
+  if [ -f "${password_file}" ]; then
+    rm "${password_file}"
   fi
 }
 
@@ -94,6 +130,7 @@ clear_docker() {
   fi
   rm ./vault_credentials.json 2>&1
   rm -rf ./vault/data 2>&1
+  rm ./ca/ca* 2>&1
 }
 
 main() {
@@ -109,6 +146,7 @@ main() {
       [ ! "$(docker network ls | grep rohr_network)" ] && docker network create rohr_network --subnet 172.16.238.0/24 --gateway 172.16.238.1
       start_vault
       store_aws_secret_to_vault
+      certgen
       if [ ! -f ./.env ]; then
         echo "Generating .env"
         envgen
@@ -132,5 +170,4 @@ main() {
 }
 
 main "$@"
-
-set +x
+# set +x

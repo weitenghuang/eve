@@ -1,9 +1,9 @@
 package nats
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr/pkg/config"
 	"github.com/nats-io/go-nats"
-	"log"
 	"math"
 	"time"
 )

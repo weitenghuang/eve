@@ -1,8 +1,8 @@
 package main
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr/cmd/evectl/command"
-	"log"
 	"os"
 )
 

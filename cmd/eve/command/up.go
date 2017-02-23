@@ -26,6 +26,9 @@ func init() {
 		Addr:   fmt.Sprintf(":%s", apiConfig.Port),
 		DNS:    apiConfig.DNS,
 		Scheme: apiConfig.Scheme,
-		// Router: httprouter.NewRouter(),
+	}
+	if apiConfig.Scheme == "https" {
+		apiServer.CertFile = apiConfig.CertFile // Retrieve from Vault
+		apiServer.KeyFile = apiConfig.KeyFile   // Retrieve from Vault
 	}
 }
