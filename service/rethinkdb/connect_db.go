@@ -15,10 +15,6 @@ type DbSession struct {
 
 var defaultSession *DbSession
 
-func init() {
-	buildSession()
-}
-
 func buildSession() error {
 	var mu sync.Mutex
 	dbConfig := config.NewRethinkDbConfig()
