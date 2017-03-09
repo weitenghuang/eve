@@ -9,29 +9,57 @@ import (
 )
 
 type InfrastructureService struct {
-	QuoinService
+	*QuoinService
+	*rohr.User
+}
+
+func NewInfrastructureService(user *rohr.User) *InfrastructureService {
+	return &InfrastructureService{
+		User: user,
+		QuoinService: &QuoinService{
+			User: user,
+		},
+	}
 }
 
 func (infraSvc InfrastructureService) GetInfrastructure(name string) (*rohr.Infrastructure, error) {
+	log.Infoln("Get Infrastructure for user:", infraSvc.User)
 	db := rethinkdb.DefaultSession()
 	infrastructure, err := db.GetInfrastructureByName(name)
 	if err != nil {
 		return nil, err
 	}
+
+	if infrastructure == nil {
+		return nil, nil
+	}
+
+	if !infrastructure.AuthorizedRead(infraSvc.User) {
+		return nil, fmt.Errorf("User %s is not authorized to read infrastructure %s", infraSvc.User.Id, infrastructure.Name)
+	}
+
 	return infrastructure, nil
 }
 
 func (infraSvc InfrastructureService) GetInfrastructureState(name string) (map[string]interface{}, error) {
-	db := rethinkdb.DefaultSession()
-	state, err := db.GetInfrastructureStateByName(name)
+	infra, err := infraSvc.GetInfrastructure(name)
 	if err != nil {
 		return nil, err
 	}
-	return state, nil
+
+	if infra == nil {
+		return nil, nil
+	}
+
+	return infra.State, nil
 }
 
 func (infraSvc InfrastructureService) CreateInfrastructure(infra *rohr.Infrastructure) error {
-	searchResult, _ := infraSvc.GetInfrastructure(infra.Name)
+	searchResult, err := infraSvc.GetInfrastructure(infra.Name)
+	if err != nil {
+		return err
+	}
+
 	if searchResult != nil {
 		log.Printf("Found existing infrastructure %s.\n", infra.Name)
 		switch searchResult.Status {
@@ -62,16 +90,20 @@ func (infraSvc InfrastructureService) CreateInfrastructure(infra *rohr.Infrastru
 }
 
 func (infraSvc InfrastructureService) DeleteInfrastructure(name string) error {
-	infra, err := infraSvc.GetInfrastructure(name)
+	if err := infraSvc.checkWritePermission(name); err != nil {
+		return err
+	}
+
+	db := rethinkdb.DefaultSession()
+	infra, err := db.GetInfrastructureByName(name)
 	if err != nil {
 		return err
 	}
-	if infra == nil {
-		return fmt.Errorf("Infrastructure %s not found", name)
-	}
+
 	if len(infra.State) == 0 {
 		return fmt.Errorf("Infrastructure %s's state is missing", name)
 	}
+
 	if infra.Status == rohr.RUNNING {
 		return fmt.Errorf("Infrastructure %s's deletion is in process", name)
 	}
@@ -91,18 +123,28 @@ func (infraSvc InfrastructureService) DeleteInfrastructureState(name string) err
 }
 
 func (infraSvc InfrastructureService) UpdateInfrastructureState(name string, state map[string]interface{}) error {
+	if err := infraSvc.checkWritePermission(name); err != nil {
+		return err
+	}
+
 	db := rethinkdb.DefaultSession()
 	if err := db.UpdateInfrastructureState(name, state); err != nil {
 		return err
 	}
+
 	return nil
 }
 
 func (infraSvc InfrastructureService) UpdateInfrastructureStatus(name string, status rohr.Status) error {
+	if err := infraSvc.checkWritePermission(name); err != nil {
+		return err
+	}
+
 	db := rethinkdb.DefaultSession()
 	if err := db.UpdateInfrastructureStatus(name, status); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -128,11 +170,30 @@ func (infraSvc InfrastructureService) PublishMessageToQueue(subject rohr.Subject
 		return err
 	}
 	defer c.Close()
+
 	subject_s := string(subject)
 	if err := c.Publish(subject_s, infra); err != nil {
 		log.Println(err)
 		return err
 	}
+
 	log.Printf("Publish Infrastructure %s to infra queue %s.\n", infra.Name, subject_s)
+	return nil
+}
+
+func (infraSvc InfrastructureService) checkWritePermission(name string) error {
+	db := rethinkdb.DefaultSession()
+	infra, err := db.GetInfrastructureByName(name)
+	if err != nil {
+		return err
+	}
+
+	if infra == nil {
+		return fmt.Errorf("Infrastructure %s not found", name)
+	}
+
+	if !infra.AuthorizedWrite(infraSvc.User) {
+		return fmt.Errorf("User %s is not authorized to modify infrastructure %s", infraSvc.User.Id, infra.Name)
+	}
 	return nil
 }

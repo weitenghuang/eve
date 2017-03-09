@@ -16,7 +16,7 @@ func DeleteCmd(stateServer *http.ApiServer) *cobra.Command {
 		Short: "To delete infrastructure",
 		Long:  `To delete infrastructure based on user's credentials, quoin module and existing infrastructure state`,
 		Run: func(cmd *cobra.Command, args []string) {
-			infrastructureService := &service.InfrastructureService{}
+			infrastructureService := service.NewInfrastructureService(getAgentUser()) //&service.InfrastructureService{}
 			if err := infrastructureService.SubscribeAsyncProc(rohr.DELETE_INFRA, delete(infrastructureService, stateServer)); err != nil {
 				log.Fatalln(err)
 			}

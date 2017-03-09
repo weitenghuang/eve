@@ -9,7 +9,7 @@ machine:
     EVE_DNS: "localhost"
     ROHR_IMAGE: "quay.io/concur_platform/rohr"
 dependencies:
-  pre:
+  override:
     - docker login --username="concur_platform+devxbot" --password="${CONCUR_QUAY_ROBOT_PWD}" --email="devx@concur.com" quay.io
     - echo "$(git rev-parse --short HEAD)" >> .tag
     - docker info

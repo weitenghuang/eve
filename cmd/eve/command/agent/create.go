@@ -16,7 +16,7 @@ func CreateCmd(stateServer *http.ApiServer) *cobra.Command {
 		Short: "To create infrastructure",
 		Long:  `To create infrastructure based on user's credentials, quoin module and existing infrastructure state`,
 		Run: func(cmd *cobra.Command, args []string) {
-			infrastructureService := &service.InfrastructureService{}
+			infrastructureService := service.NewInfrastructureService(getAgentUser()) //&service.InfrastructureService{}
 			if err := infrastructureService.SubscribeAsyncProc(rohr.CREATE_INFRA, create(infrastructureService, stateServer)); err != nil {
 				log.Fatalln(err)
 			}

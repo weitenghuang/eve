@@ -6,4 +6,5 @@ vendor/
 vault/
 rethinkdb_data/
 ca/
+docs/
 README.md

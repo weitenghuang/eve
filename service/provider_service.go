@@ -6,6 +6,13 @@ import (
 )
 
 type ProviderService struct {
+	*rohr.User
+}
+
+func NewProviderService(user *rohr.User) *ProviderService {
+	return &ProviderService{
+		User: user,
+	}
 }
 
 // GetProvider returns Provider information from database

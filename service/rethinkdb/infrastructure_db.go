@@ -23,6 +23,10 @@ func (db *DbSession) InsertInfrastructure(infra *rohr.Infrastructure) error {
 			},
 			"Status":    infra.Status,
 			"Variables": infra.Variables,
+			"Authorization": map[string]interface{}{
+				"Owner":       infra.Authorization.Owner,
+				"GroupAccess": infra.Authorization.GroupAccess,
+			},
 			"Timestamp": r.EpochTime(time.Now().Unix()),
 		},
 	).RunWrite(db.Session)
@@ -70,24 +74,4 @@ func (db *DbSession) GetInfrastructureByName(name string) (*rohr.Infrastructure,
 		return nil, err
 	}
 	return &infrastructure, nil
-}
-
-func (db *DbSession) GetInfrastructureStateByName(name string) (map[string]interface{}, error) {
-	cursor, err := r.DB(db.DbName).Table(INFRA_TABLE).Get(r.UUID(name)).Default(map[string]interface{}{}).Pluck("State").Run(db.Session)
-	defer cursor.Close()
-	if err != nil {
-		return nil, err
-	}
-	if cursor.IsNil() {
-		return nil, nil
-	}
-	var output map[string]interface{}
-	if err = cursor.One(&output); err != nil {
-		return nil, err
-	}
-
-	if output["State"] == nil {
-		return nil, nil
-	}
-	return output["State"].(map[string]interface{}), nil
 }

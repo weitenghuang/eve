@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func GetHealthHandler(healthService rohr.HealthService) httprouter.Handle {
+func getHealthHandler(healthService rohr.HealthService) httprouter.Handle {
 	return func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 		log.Printf("Invoke GetHealth API")
 

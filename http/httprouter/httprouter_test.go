@@ -1,9 +1,8 @@
-package httprouter_test
+package httprouter
 
 import (
 	"github.com/concur/rohr"
 	rohrHttp "github.com/concur/rohr/http"
-	rohrRouter "github.com/concur/rohr/http/httprouter"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"net/http/httptest"
@@ -25,8 +24,8 @@ func (h *mockHealthService) GetHealth() *rohr.HealthInfo {
 	}
 }
 
-func TestRouter_GetHealthHandler(t *testing.T) {
-	healthHandler := rohrRouter.GetHealthHandler(&mockHealthService{})
+func TestRouter_getHealthHandler(t *testing.T) {
+	healthHandler := getHealthHandler(&mockHealthService{})
 
 	router := httprouter.New()
 	router.GET("/health_test", healthHandler)
@@ -37,18 +36,18 @@ func TestRouter_GetHealthHandler(t *testing.T) {
 	response_header := w.Header()
 
 	if w.Code != http.StatusOK {
-		t.Errorf("GetHealthHandler returns HTTP error code: %v, header: %#v, body: %#v", w.Code, response_header, response_body)
+		t.Errorf("getHealthHandler returns HTTP error code: %v, header: %#v, body: %#v", w.Code, response_header, response_body)
 	}
 
 	if !strings.Contains(response_body, "\"metadata\":{\"Environment\":\"DEV\",\"Version\":\"v0.0.1\"}") {
-		t.Errorf("GetHealthHandler should return mock health info.")
+		t.Errorf("getHealthHandler should return mock health info.")
 	}
 }
 
 func TestRouter_RegisterRoute(t *testing.T) {
-	router := rohrRouter.NewRouter()
+	router := NewRouter()
 	hrouter := router.RegisterRoute(&rohrHttp.ApiServer{})
-	r, _ := http.NewRequest(http.MethodGet, rohrRouter.HEALTH_PATH, nil)
+	r, _ := http.NewRequest(http.MethodGet, HEALTH_PATH, nil)
 	w := httptest.NewRecorder()
 	hrouter.ServeHTTP(w, r)
 

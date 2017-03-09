@@ -3,7 +3,6 @@ package http
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr/pkg/vault"
 	"net/http"
 	"strings"
 )
@@ -38,7 +37,6 @@ func (s *ApiServer) ListenAndServe() {
 	case "http":
 		log.Fatal(server.ListenAndServe())
 	case "https":
-		server.Handler = Auth(server.Handler)
 		log.Fatal(server.ListenAndServeTLS(s.CertFile, s.KeyFile))
 	default:
 		log.Fatal("Invalid scheme vaule: %v", s.Scheme)
@@ -47,23 +45,4 @@ func (s *ApiServer) ListenAndServe() {
 
 func (s *ApiServer) GetServerAddr() string {
 	return fmt.Sprintf("%s://%s%s/", s.Scheme, s.DNS, s.Addr)
-}
-
-func Auth(handler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		username, password, _ := r.BasicAuth()
-		secretPath := fmt.Sprintf("secret/user/%s", username)
-		user, err := vault.GetLogicalData(secretPath)
-		if err != nil {
-			log.Errorln(err)
-		}
-		if user["name"] != username || user["password"] != password {
-			msg := "User authentication failure"
-			log.Infof("%s Name: %s, Password: %s", msg, username, password)
-			http.Error(w, msg, http.StatusUnauthorized)
-			return
-		}
-		log.Infoln("User logins:", username)
-		handler.ServeHTTP(w, r)
-	})
 }

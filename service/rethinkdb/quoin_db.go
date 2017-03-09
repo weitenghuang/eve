@@ -20,7 +20,11 @@ func (db *DbSession) InsertQuoin(quoin *rohr.Quoin) error {
 			"Name":       quoin.Name,
 			"ArchiveUri": quoin.ArchiveUri,
 			"Variables":  quoin.Variables,
-			"Timestamp":  r.EpochTime(time.Now().Unix()),
+			"Authorization": map[string]interface{}{
+				"Owner":       quoin.Authorization.Owner,
+				"GroupAccess": quoin.Authorization.GroupAccess,
+			},
+			"Timestamp": r.EpochTime(time.Now().Unix()),
 		}).RunWrite(db.Session)
 	if err != nil {
 		return err
@@ -64,7 +68,10 @@ func (db *DbSession) InsertQuoinArchive(quoinArchive *rohr.QuoinArchive) error {
 		map[string]interface{}{
 			"QuoinName": quoinArchive.QuoinName,
 			"Modules":   quoinArchive.Modules,
-			// "TfPlan":    quoinArchive.TfPlan,
+			"Authorization": map[string]interface{}{
+				"Owner":       quoinArchive.Authorization.Owner,
+				"GroupAccess": quoinArchive.Authorization.GroupAccess,
+			},
 			"Timestamp": r.EpochTime(time.Now().Unix()),
 		}).RunWrite(db.Session)
 	if err != nil {

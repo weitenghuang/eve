@@ -19,3 +19,11 @@ func createVarFile(quoinVars []rohr.QuoinVar) []byte {
 func stateEndpoint(stateServer *http.ApiServer, name string) string {
 	return fmt.Sprint(stateServer.GetServerAddr(), "infrastructure/", name, "/state")
 }
+
+func getAgentUser() *rohr.User {
+	return &rohr.User{
+		Id:           rohr.UserId(rohr.AGENT_USER),
+		Organization: rohr.Organization(rohr.AGENT_USER),
+		Teams:        []rohr.Team{rohr.Team(rohr.AGENT_USER)},
+	}
+}

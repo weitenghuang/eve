@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/concur/rohr"
 	"github.com/concur/rohr/pkg/terraform"
@@ -9,6 +10,13 @@ import (
 )
 
 type QuoinService struct {
+	*rohr.User
+}
+
+func NewQuoinService(user *rohr.User) *QuoinService {
+	return &QuoinService{
+		User: user,
+	}
 }
 
 // GetQuoin returns Quoin information from database
@@ -18,6 +26,15 @@ func (q QuoinService) GetQuoin(name string) (*rohr.Quoin, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if quoin == nil {
+		return nil, nil
+	}
+
+	if !quoin.AuthorizedRead(q.User) {
+		return nil, fmt.Errorf("User %s is not authorized to read Quoin %s", q.User.Id, quoin.Name)
+	}
+
 	return quoin, nil
 }
 
@@ -27,6 +44,14 @@ func (q QuoinService) GetQuoinArchive(id string) (*rohr.QuoinArchive, error) {
 	quoinArchive, err := db.GetQuoinArchiveById(id)
 	if err != nil {
 		return nil, err
+	}
+
+	if quoinArchive == nil {
+		return nil, nil
+	}
+
+	if !quoinArchive.AuthorizedRead(q.User) {
+		return nil, fmt.Errorf("User %s is not authorized to read Quoin Archive %s", q.User.Id, quoinArchive.Id)
 	}
 	return quoinArchive, nil
 }
