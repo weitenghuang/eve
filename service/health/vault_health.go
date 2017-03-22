@@ -1,7 +1,7 @@
 package health
 
 import (
-	"github.com/concur/rohr"
+	"github.com/concur/eve"
 	"github.com/hashicorp/vault/api"
 )
 
@@ -10,10 +10,10 @@ type VaultChecker struct {
 	Config *api.Config
 }
 
-func NewVaultChecker() (*VaultChecker, *rohr.Error) {
+func NewVaultChecker() (*VaultChecker, *eve.Error) {
 	config := api.DefaultConfig()
 	if err := config.ReadEnvironment(); err != nil {
-		return nil, &rohr.Error{
+		return nil, &eve.Error{
 			Type:        "Vault",
 			Description: "Create Client error",
 			Error:       err.Error(),
@@ -22,7 +22,7 @@ func NewVaultChecker() (*VaultChecker, *rohr.Error) {
 
 	client, err := api.NewClient(config)
 	if err != nil {
-		return nil, &rohr.Error{
+		return nil, &eve.Error{
 			Type:        "Vault",
 			Description: "Create Client error",
 			Metadata: map[string]string{
@@ -34,11 +34,11 @@ func NewVaultChecker() (*VaultChecker, *rohr.Error) {
 	return &VaultChecker{Client: client, Config: config}, nil
 }
 
-func (v *VaultChecker) InitStatus() *rohr.Error {
+func (v *VaultChecker) InitStatus() *eve.Error {
 	initStatus, err := v.Client.Sys().InitStatus()
 	switch {
 	case err != nil:
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "Vault",
 			Description: "Init Status error",
 			Metadata: map[string]string{
@@ -47,7 +47,7 @@ func (v *VaultChecker) InitStatus() *rohr.Error {
 			Error: err.Error(),
 		}
 	case !initStatus:
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "Vault",
 			Description: "Init Status error",
 			Metadata: map[string]string{
@@ -60,11 +60,11 @@ func (v *VaultChecker) InitStatus() *rohr.Error {
 	return nil
 }
 
-func (v *VaultChecker) SealStatus() *rohr.Error {
+func (v *VaultChecker) SealStatus() *eve.Error {
 	sealStatus, err := v.Client.Sys().SealStatus()
 	switch {
 	case err != nil:
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "Vault",
 			Description: "Seal Status error",
 			Metadata: map[string]string{
@@ -73,7 +73,7 @@ func (v *VaultChecker) SealStatus() *rohr.Error {
 			Error: err.Error(),
 		}
 	case sealStatus.Sealed:
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "Vault",
 			Description: "Vault is sealed",
 			Metadata: map[string]string{

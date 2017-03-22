@@ -1,4 +1,4 @@
-Rohr
+Eve
 ====
 
 Introduction
@@ -12,23 +12,23 @@ Prerequisites
 
 Getting Started
 ---------------
-- Download Rohr project:
+- Download Eve project:
 ```sh
-git clone git@github.com:concur/rohr.git
+git clone git@github.com:concur/eve.git
 ```
 
-- Start Rohr project:
+- Start Eve project:
 ```sh
 ./script/dev up
 ```
 
-- Stop Rohr project:
+- Stop Eve project:
 You can use `ctl+c`, or use another shell session then run following command
 ```sh
 ./script/dev down
 ```
 
-- Clear Rohr project:
+- Clear Eve project:
 ```sh
 ./script/dev clear
 ```
@@ -45,7 +45,7 @@ You can use `ctl+c`, or use another shell session then run following command
 
 Using Eve API Server
 --------------------
-- Copy following command on Rohr directory
+- Copy following command on Eve directory
 ```sh
 alias evectl=$PWD/script/evectl 
 ```
@@ -80,7 +80,7 @@ Using evectl
 
 ## Prerequisites
 
-- Follow the getting started section above for starting rohr
+- Follow the getting started section above for starting eve
 - In a separate terminal:
   - Make sure you clear your AWS environment variables if they're set
   - Using environment variables or `aws configure`, set AWS access key and secret to your credentials

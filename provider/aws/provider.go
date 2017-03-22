@@ -5,7 +5,7 @@ import (
 	"sort"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr"
+	"github.com/concur/eve"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -19,12 +19,12 @@ func (a accountList) Less(i, j int) bool { return a[i].Name < a[j].Name }
 
 // Provider represents an AWS Provider
 type Provider struct {
-	provider *rohr.Provider
+	provider *eve.Provider
 	accounts accountList
 }
 
 // NewProvider returns an instance of an AWS provider
-func NewProvider(provider *rohr.Provider) *Provider {
+func NewProvider(provider *eve.Provider) *Provider {
 	p := &Provider{
 		provider: provider,
 	}

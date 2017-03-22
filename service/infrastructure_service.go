@@ -3,17 +3,17 @@ package service
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr"
-	"github.com/concur/rohr/service/nats"
-	"github.com/concur/rohr/service/rethinkdb"
+	"github.com/concur/eve"
+	"github.com/concur/eve/service/nats"
+	"github.com/concur/eve/service/rethinkdb"
 )
 
 type InfrastructureService struct {
 	*QuoinService
-	*rohr.User
+	*eve.User
 }
 
-func NewInfrastructureService(user *rohr.User) *InfrastructureService {
+func NewInfrastructureService(user *eve.User) *InfrastructureService {
 	return &InfrastructureService{
 		User: user,
 		QuoinService: &QuoinService{
@@ -22,7 +22,7 @@ func NewInfrastructureService(user *rohr.User) *InfrastructureService {
 	}
 }
 
-func (infraSvc InfrastructureService) GetInfrastructure(name string) (*rohr.Infrastructure, error) {
+func (infraSvc InfrastructureService) GetInfrastructure(name string) (*eve.Infrastructure, error) {
 	log.Infoln("Get Infrastructure for user:", infraSvc.User)
 	db := rethinkdb.DefaultSession()
 	infrastructure, err := db.GetInfrastructureByName(name)
@@ -54,7 +54,7 @@ func (infraSvc InfrastructureService) GetInfrastructureState(name string) (map[s
 	return infra.State, nil
 }
 
-func (infraSvc InfrastructureService) CreateInfrastructure(infra *rohr.Infrastructure) error {
+func (infraSvc InfrastructureService) CreateInfrastructure(infra *eve.Infrastructure) error {
 	searchResult, err := infraSvc.GetInfrastructure(infra.Name)
 	if err != nil {
 		return err
@@ -63,7 +63,7 @@ func (infraSvc InfrastructureService) CreateInfrastructure(infra *rohr.Infrastru
 	if searchResult != nil {
 		log.Printf("Found existing infrastructure %s.\n", infra.Name)
 		switch searchResult.Status {
-		case rohr.RUNNING, rohr.DEPLOYED, rohr.OBSOLETED:
+		case eve.RUNNING, eve.DEPLOYED, eve.OBSOLETED:
 			return fmt.Errorf("Infrastructure %s cannot be created at this moment. Please check its current status first.", infra.Name)
 		default:
 			log.Printf("Re-create existing infrastructure %s.\n", infra.Name)
@@ -71,7 +71,7 @@ func (infraSvc InfrastructureService) CreateInfrastructure(infra *rohr.Infrastru
 	} else {
 		archiveId := infraSvc.GetQuoinArchiveIdFromUri(infra.Quoin.ArchiveUri)
 		if archiveId != "" {
-			infra.Status = rohr.VALIDATED
+			infra.Status = eve.VALIDATED
 		} else {
 			return fmt.Errorf("Empty archive id error: To create an infrastructure, please provide valid quoin archive id.")
 		}
@@ -82,7 +82,7 @@ func (infraSvc InfrastructureService) CreateInfrastructure(infra *rohr.Infrastru
 		log.Printf("New infrastructure %s is stored in eve db.\n", infra.Name)
 	}
 
-	if err := infraSvc.PublishMessageToQueue(rohr.CREATE_INFRA, infra); err != nil {
+	if err := infraSvc.PublishMessageToQueue(eve.CREATE_INFRA, infra); err != nil {
 		return err
 	}
 
@@ -104,14 +104,14 @@ func (infraSvc InfrastructureService) DeleteInfrastructure(name string) error {
 		return fmt.Errorf("Infrastructure %s's state is missing", name)
 	}
 
-	if infra.Status == rohr.RUNNING {
+	if infra.Status == eve.RUNNING {
 		return fmt.Errorf("Infrastructure %s's deletion is in process", name)
 	}
 
 	// Avoid NATS queue message size limit
 	infra.State = nil
 
-	if err := infraSvc.PublishMessageToQueue(rohr.DELETE_INFRA, infra); err != nil {
+	if err := infraSvc.PublishMessageToQueue(eve.DELETE_INFRA, infra); err != nil {
 		return err
 	}
 
@@ -135,7 +135,7 @@ func (infraSvc InfrastructureService) UpdateInfrastructureState(name string, sta
 	return nil
 }
 
-func (infraSvc InfrastructureService) UpdateInfrastructureStatus(name string, status rohr.Status) error {
+func (infraSvc InfrastructureService) UpdateInfrastructureStatus(name string, status eve.Status) error {
 	if err := infraSvc.checkWritePermission(name); err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func (infraSvc InfrastructureService) UpdateInfrastructureStatus(name string, st
 	return nil
 }
 
-func (infraSvc InfrastructureService) SubscribeAsyncProc(subject rohr.Subject, handler rohr.InfrastructureAsyncHandler) error {
+func (infraSvc InfrastructureService) SubscribeAsyncProc(subject eve.Subject, handler eve.InfrastructureAsyncHandler) error {
 	c, err := nats.EncodedConn()
 	if err != nil {
 		log.Println(err)
@@ -163,7 +163,7 @@ func (infraSvc InfrastructureService) SubscribeAsyncProc(subject rohr.Subject, h
 	return nil
 }
 
-func (infraSvc InfrastructureService) PublishMessageToQueue(subject rohr.Subject, infra *rohr.Infrastructure) error {
+func (infraSvc InfrastructureService) PublishMessageToQueue(subject eve.Subject, infra *eve.Infrastructure) error {
 	c, err := nats.EncodedConn()
 	if err != nil {
 		log.Println(err)

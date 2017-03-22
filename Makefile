@@ -1,5 +1,5 @@
 # Setup environment
-PROJECT                 := rohr
+PROJECT                 := eve
 ORG_PATH                := github.com/concur
 REPO_PATH               := ${ORG_PATH}/${PROJECT}
 LOCAL_GOPATH            := ${HOME}/.local/share/go/${PROJECT}

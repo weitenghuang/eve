@@ -2,7 +2,7 @@ package db
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr/service/rethinkdb"
+	"github.com/concur/eve/service/rethinkdb"
 	"github.com/spf13/cobra"
 	"time"
 )

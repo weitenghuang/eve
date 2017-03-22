@@ -1,8 +1,8 @@
 package health
 
 import (
-	"github.com/concur/rohr"
-	"github.com/concur/rohr/pkg/config"
+	"github.com/concur/eve"
+	"github.com/concur/eve/pkg/config"
 	"github.com/nats-io/go-nats"
 	"strconv"
 	"time"
@@ -27,7 +27,7 @@ func NewNatsChecker() *NatsChecker {
 	}
 }
 
-func (nChecker *NatsChecker) Ping() *rohr.Error {
+func (nChecker *NatsChecker) Ping() *eve.Error {
 	opts := nats.Options{
 		AllowReconnect: nChecker.AllowReconnect,
 		MaxReconnect:   nChecker.MaxReconnect,
@@ -37,7 +37,7 @@ func (nChecker *NatsChecker) Ping() *rohr.Error {
 	}
 	if _, err := opts.Connect(); err != nil {
 		meta := nChecker.natsOptsMeta()
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "NATS message system",
 			Description: "Ping error",
 			Metadata:    meta,

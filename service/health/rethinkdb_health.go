@@ -1,8 +1,8 @@
 package health
 
 import (
-	"github.com/concur/rohr"
-	"github.com/concur/rohr/pkg/config"
+	"github.com/concur/eve"
+	"github.com/concur/eve/pkg/config"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"strconv"
 	"strings"
@@ -28,7 +28,7 @@ func NewRethinkdbChecker() *RethinkdbChecker {
 	}
 }
 
-func (rChecker *RethinkdbChecker) Ping() *rohr.Error {
+func (rChecker *RethinkdbChecker) Ping() *eve.Error {
 	meta := rChecker.rethinkOptsMeta()
 
 	hostname, port := rChecker.splitAddress()
@@ -41,7 +41,7 @@ func (rChecker *RethinkdbChecker) Ping() *rohr.Error {
 	})
 
 	if err != nil {
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "RethinkDB",
 			Description: "NewPool error",
 			Metadata:    meta,
@@ -50,7 +50,7 @@ func (rChecker *RethinkdbChecker) Ping() *rohr.Error {
 	}
 
 	if err := pool.Ping(); err != nil {
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "RethinkDB",
 			Description: "Ping error",
 			Metadata:    meta,
@@ -60,7 +60,7 @@ func (rChecker *RethinkdbChecker) Ping() *rohr.Error {
 	return nil
 }
 
-func (rChecker *RethinkdbChecker) DbReady() *rohr.Error {
+func (rChecker *RethinkdbChecker) DbReady() *eve.Error {
 	meta := rChecker.rethinkOptsMeta()
 
 	session, err := r.Connect(r.ConnectOpts{
@@ -71,7 +71,7 @@ func (rChecker *RethinkdbChecker) DbReady() *rohr.Error {
 	})
 
 	if err != nil {
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "RethinkDB",
 			Description: "Connection error",
 			Metadata:    meta,
@@ -82,7 +82,7 @@ func (rChecker *RethinkdbChecker) DbReady() *rohr.Error {
 	cursor, err := r.DBList().Run(session)
 	defer cursor.Close()
 	if err != nil {
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "RethinkDB",
 			Description: "DBList error",
 			Metadata:    meta,
@@ -97,7 +97,7 @@ func (rChecker *RethinkdbChecker) DbReady() *rohr.Error {
 		}
 	}
 
-	return &rohr.Error{
+	return &eve.Error{
 		Type:        "RethinkDB",
 		Description: "DbReady error: eve db not found",
 		Metadata:    meta,
@@ -105,7 +105,7 @@ func (rChecker *RethinkdbChecker) DbReady() *rohr.Error {
 	}
 }
 
-func (rChecker *RethinkdbChecker) TableReady() *rohr.Error {
+func (rChecker *RethinkdbChecker) TableReady() *eve.Error {
 	meta := rChecker.rethinkOptsMeta()
 
 	session, err := r.Connect(r.ConnectOpts{
@@ -116,7 +116,7 @@ func (rChecker *RethinkdbChecker) TableReady() *rohr.Error {
 	})
 
 	if err != nil {
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "RethinkDB",
 			Description: "Connection error",
 			Metadata:    meta,
@@ -127,7 +127,7 @@ func (rChecker *RethinkdbChecker) TableReady() *rohr.Error {
 	cursor, err := r.DB(rChecker.DatabaseName).TableList().Run(session)
 	defer cursor.Close()
 	if err != nil {
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "RethinkDB",
 			Description: "TableList error",
 			Metadata:    meta,
@@ -151,10 +151,10 @@ func (rChecker *RethinkdbChecker) TableReady() *rohr.Error {
 
 	if len(tables) > 0 {
 		err := "Table:"
-		for key, _ := range tables {
+		for key := range tables {
 			err = strings.Join([]string{err, key, "is not found."}, " ")
 		}
-		return &rohr.Error{
+		return &eve.Error{
 			Type:        "RethinkDB",
 			Description: "TableReady error",
 			Metadata:    meta,

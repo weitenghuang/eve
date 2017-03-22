@@ -3,8 +3,8 @@ package httprouter
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr/http"
-	"github.com/concur/rohr/service"
+	"github.com/concur/eve/http"
+	"github.com/concur/eve/service"
 	"github.com/julienschmidt/httprouter"
 )
 

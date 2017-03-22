@@ -7,18 +7,18 @@ machine:
     ENVIRONMENT: "CIRCLE_CI"
     EVE_PORT: 80
     EVE_DNS: "localhost"
-    ROHR_IMAGE: "quay.io/concur_platform/rohr"
+    EVE_IMAGE: "quay.io/concur_platform/eve"
 dependencies:
   override:
     - docker login --username="concur_platform+devxbot" --password="${CONCUR_QUAY_ROBOT_PWD}" --email="devx@concur.com" quay.io
     - echo "$(git rev-parse --short HEAD)" >> .tag
     - docker info
-    - ./build $ROHR_IMAGE $(cat .tag)
+    - ./build $EVE_IMAGE $(cat .tag)
   post:
     - docker images
 test:
   override:
-    - docker run -d --name testing -e "ENVIRONMENT=$ENVIRONMENT" -e "EVE_PORT=$EVE_PORT" -e "EVE_DNS=$EVE_DNS" -p $EVE_PORT:$EVE_PORT $ROHR_IMAGE:$(cat .tag)
+    - docker run -d --name testing -e "ENVIRONMENT=$ENVIRONMENT" -e "EVE_PORT=$EVE_PORT" -e "EVE_DNS=$EVE_DNS" -p $EVE_PORT:$EVE_PORT $EVE_IMAGE:$(cat .tag)
     - docker logs testing
   post:
     - docker stop testing
@@ -26,5 +26,5 @@ deployment:
   prod:
     branch: master
     commands:
-      - docker tag $ROHR_IMAGE:$(cat .tag) $ROHR_IMAGE:latest
-      - docker push $ROHR_IMAGE
+      - docker tag $EVE_IMAGE:$(cat .tag) $EVE_IMAGE:latest
+      - docker push $EVE_IMAGE

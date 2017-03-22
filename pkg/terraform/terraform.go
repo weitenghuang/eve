@@ -6,7 +6,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr/pkg/vault"
+	"github.com/concur/eve/pkg/vault"
 	"github.com/pborman/uuid"
 	"io"
 	"io/ioutil"

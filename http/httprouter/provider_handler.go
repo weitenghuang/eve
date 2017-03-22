@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr/service"
+	"github.com/concur/eve/service"
 	"github.com/julienschmidt/httprouter"
 )
 

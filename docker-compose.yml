@@ -14,7 +14,7 @@ services:
       - "8222:8222"
       - "6222:6222"
       - "$EVE_QUEUE_PORT:$EVE_QUEUE_PORT"
-  eve:
+  api:
     build: .
     ports:
       - "$EVE_PORT:$EVE_PORT"
@@ -26,21 +26,21 @@ services:
       - rethink
       - nats
   eve-agent-create:
-    image: rohr_eve:latest
+    image: eve_api:latest
     env_file: .env
     command: ["eve", "agent", "create"]
     links:
       - rethink
       - nats
   eve-agent-delete:
-    image: rohr_eve:latest
+    image: eve_api:latest
     env_file: .env
     command: ["eve", "agent", "delete"]
     links:
       - rethink
       - nats
   db-init:
-    image: rohr_eve:latest
+    image: eve_api:latest
     env_file: .env
     command: ["eve", "db", "init"]
     links:
@@ -48,4 +48,4 @@ services:
 networks:
   default:
     external:
-      name: rohr_network
+      name: eve_network

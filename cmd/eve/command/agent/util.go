@@ -2,11 +2,11 @@ package agent
 
 import (
 	"fmt"
-	"github.com/concur/rohr"
-	"github.com/concur/rohr/http"
+	"github.com/concur/eve"
+	"github.com/concur/eve/http"
 )
 
-func createVarFile(quoinVars []rohr.QuoinVar) []byte {
+func createVarFile(quoinVars []eve.QuoinVar) []byte {
 	var varfile []byte
 	if varLen := len(quoinVars); varLen > 0 {
 		for _, infraVar := range quoinVars {
@@ -20,10 +20,10 @@ func stateEndpoint(stateServer *http.ApiServer, name string) string {
 	return fmt.Sprint(stateServer.GetServerAddr(), "infrastructure/", name, "/state")
 }
 
-func getAgentUser() *rohr.User {
-	return &rohr.User{
-		Id:           rohr.UserId(rohr.AGENT_USER),
-		Organization: rohr.Organization(rohr.AGENT_USER),
-		Teams:        []rohr.Team{rohr.Team(rohr.AGENT_USER)},
+func getAgentUser() *eve.User {
+	return &eve.User{
+		Id:           eve.UserId(eve.AGENT_USER),
+		Organization: eve.Organization(eve.AGENT_USER),
+		Teams:        []eve.Team{eve.Team(eve.AGENT_USER)},
 	}
 }

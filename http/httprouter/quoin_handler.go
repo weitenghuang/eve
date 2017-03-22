@@ -3,9 +3,9 @@ package httprouter
 import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr"
-	rohrHttp "github.com/concur/rohr/http"
-	"github.com/concur/rohr/service"
+	"github.com/concur/eve"
+	eveHttp "github.com/concur/eve/http"
+	"github.com/concur/eve/service"
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
 	"net/http"
@@ -43,7 +43,7 @@ func getQuoinHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params
 }
 
 // postQuoinHandler returns the httprouter.Handle func for POST /quoin request
-func postQuoinHandler(apiServer *rohrHttp.ApiServer) httprouter.Handle {
+func postQuoinHandler(apiServer *eveHttp.ApiServer) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		user, err := getUser(r)
 		if err != nil {
@@ -98,7 +98,7 @@ func postQuoinArchiveHandler(w http.ResponseWriter, r *http.Request, p httproute
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Printf("Bad Request with invalid body. Error: %#v", err)
 	}
-	quoinArchive := &rohr.QuoinArchive{
+	quoinArchive := &eve.QuoinArchive{
 		QuoinName: name,
 		Modules:   content,
 	}

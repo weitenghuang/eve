@@ -1,4 +1,4 @@
-package rohr
+package eve
 
 type Authorizable interface {
 	AuthorizedRead(user *User) bool

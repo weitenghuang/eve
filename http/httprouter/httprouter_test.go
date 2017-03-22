@@ -1,8 +1,8 @@
 package httprouter
 
 import (
-	"github.com/concur/rohr"
-	rohrHttp "github.com/concur/rohr/http"
+	"github.com/concur/eve"
+	eveHttp "github.com/concur/eve/http"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"net/http/httptest"
@@ -13,8 +13,8 @@ import (
 type mockHealthService struct {
 }
 
-func (h *mockHealthService) GetHealth() *rohr.HealthInfo {
-	return &rohr.HealthInfo{
+func (h *mockHealthService) GetHealth() *eve.HealthInfo {
+	return &eve.HealthInfo{
 		Hostname: "TestHost",
 		Metadata: map[string]string{
 			"Version":     "v0.0.1",
@@ -46,7 +46,7 @@ func TestRouter_getHealthHandler(t *testing.T) {
 
 func TestRouter_RegisterRoute(t *testing.T) {
 	router := NewRouter()
-	hrouter := router.RegisterRoute(&rohrHttp.ApiServer{})
+	hrouter := router.RegisterRoute(&eveHttp.ApiServer{})
 	r, _ := http.NewRequest(http.MethodGet, HEALTH_PATH, nil)
 	w := httptest.NewRecorder()
 	hrouter.ServeHTTP(w, r)

@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr"
+	"github.com/concur/eve"
 )
 
 // GetProvider retrieves a provider with the given name
-func (c *Client) GetProvider(name string) *rohr.Provider {
+func (c *Client) GetProvider(name string) *eve.Provider {
 	endpoint := fmt.Sprintf("/provider/%s", name)
 	input := &RequestInput{
 		Params:     make(map[string]string),
@@ -26,7 +26,7 @@ func (c *Client) GetProvider(name string) *rohr.Provider {
 		log.Fatalf("GetProvider: %s", err)
 	}
 
-	var provider *rohr.Provider
+	var provider *eve.Provider
 	if err := decodeJson(resp, &provider); err != nil {
 		log.Fatalf("GetProvider: %s", err)
 	}

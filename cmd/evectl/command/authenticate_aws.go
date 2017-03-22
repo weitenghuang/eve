@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/concur/rohr/client"
-	"github.com/concur/rohr/provider/aws"
+	"github.com/concur/eve/client"
+	"github.com/concur/eve/provider/aws"
 	"github.com/spf13/cobra"
 	"github.com/tj/go-prompt"
 )

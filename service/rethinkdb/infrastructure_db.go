@@ -2,7 +2,7 @@ package rethinkdb
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr"
+	"github.com/concur/eve"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"time"
 )
@@ -11,7 +11,7 @@ const (
 	INFRA_TABLE = "infrastructure"
 )
 
-func (db *DbSession) InsertInfrastructure(infra *rohr.Infrastructure) error {
+func (db *DbSession) InsertInfrastructure(infra *eve.Infrastructure) error {
 	res, err := r.DB(db.DbName).Table(INFRA_TABLE).Insert(
 		map[string]interface{}{
 			"Id":   r.UUID(infra.Name),
@@ -49,7 +49,7 @@ func (db *DbSession) UpdateInfrastructureState(name string, state map[string]int
 	return nil
 }
 
-func (db *DbSession) UpdateInfrastructureStatus(name string, status rohr.Status) error {
+func (db *DbSession) UpdateInfrastructureStatus(name string, status eve.Status) error {
 	res, err := r.DB(db.DbName).Table(INFRA_TABLE).Get(r.UUID(name)).Update(map[string]interface{}{
 		"Status": status,
 	}).RunWrite(db.Session)
@@ -60,8 +60,8 @@ func (db *DbSession) UpdateInfrastructureStatus(name string, status rohr.Status)
 	return nil
 }
 
-func (db *DbSession) GetInfrastructureByName(name string) (*rohr.Infrastructure, error) {
-	var infrastructure rohr.Infrastructure
+func (db *DbSession) GetInfrastructureByName(name string) (*eve.Infrastructure, error) {
+	var infrastructure eve.Infrastructure
 	cursor, err := r.DB(db.DbName).Table(INFRA_TABLE).Get(r.UUID(name)).Run(db.Session)
 	defer cursor.Close()
 	if err != nil {

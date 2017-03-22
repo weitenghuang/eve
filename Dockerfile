@@ -3,7 +3,7 @@ MAINTAINER Concur Platform R&D <platform-engineering@concur.com>
 
 ENV GOPATH="/go"
 ENV PATH="$PATH:$GOPATH/bin:/opt/bin"
-ENV ROHR_PATH="github.com/concur/rohr"
+ENV EVE_PATH="github.com/concur/eve"
 ENV TERRAFORM_VERSION=0.8.7
 ENV TERRAFORM_SHA256SUM=7ca424d8d0e06697cc7f492b162223aef525bfbcd69248134a0ce0b529285c8c
 
@@ -16,27 +16,27 @@ RUN echo "===> Install build dependencies..." \
   && git config --global http.https://gopkg.in.followRedirects true \
   && go get github.com/Masterminds/glide
 
-WORKDIR "$GOPATH/src/$ROHR_PATH"
-COPY . "$GOPATH/src/$ROHR_PATH"
+WORKDIR "$GOPATH/src/$EVE_PATH"
+COPY . "$GOPATH/src/$EVE_PATH"
 
-RUN echo "===> Install ROHR project dependencies..." \
+RUN echo "===> Install EVE project dependencies..." \
   && glide install
 
-RUN echo "===> Run ROHR unit tests..." \
+RUN echo "===> Run EVE unit tests..." \
   && go test -v $(glide novendor)
 
-RUN echo "===> Build ROHR cmd package..." \
-  && mkdir -p $GOPATH/src/$ROHR_PATH/artifacts \
+RUN echo "===> Build EVE cmd package..." \
+  && mkdir -p $GOPATH/src/$EVE_PATH/artifacts \
   && BUILD_PLATFORM="$(go env GOOS)_$(go env GOARCH)" \
   && echo "===> Build eve cmd..." \
-  && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -i -x -o $GOPATH/src/$ROHR_PATH/artifacts/$BUILD_PLATFORM/eve $ROHR_PATH/cmd/eve \
+  && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -i -x -o $GOPATH/src/$EVE_PATH/artifacts/$BUILD_PLATFORM/eve $EVE_PATH/cmd/eve \
   && echo "===> Build evectl cmd..." \
-  && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -i -x -o $GOPATH/src/$ROHR_PATH/artifacts/$BUILD_PLATFORM/evectl $ROHR_PATH/cmd/evectl \
+  && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -i -x -o $GOPATH/src/$EVE_PATH/artifacts/$BUILD_PLATFORM/evectl $EVE_PATH/cmd/evectl \
   && echo "===> Cross Compile evectl" \
   && echo "===> Build evectl cmd for darwin..." \
-  && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -i -x -o $GOPATH/src/$ROHR_PATH/artifacts/darwin_amd64/evectl $ROHR_PATH/cmd/evectl \
+  && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -i -x -o $GOPATH/src/$EVE_PATH/artifacts/darwin_amd64/evectl $EVE_PATH/cmd/evectl \
   && echo "===> Build evectl cmd for windows..." \
-  && CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -i -x -o $GOPATH/src/$ROHR_PATH/artifacts/windows_amd64/evectl.exe $ROHR_PATH/cmd/evectl
+  && CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -i -x -o $GOPATH/src/$EVE_PATH/artifacts/windows_amd64/evectl.exe $EVE_PATH/cmd/evectl
 
 RUN echo "===> Packaging evectl..." \
   && for PLATFORM in $(find ./artifacts -mindepth 1 -maxdepth 1 -type d); do \
@@ -62,6 +62,6 @@ RUN echo "===> Installing Terraform..." \
   && unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt/bin \
   && rm -f terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 
-ENTRYPOINT ["/go/src/github.com/concur/rohr/docker-entrypoint.sh"]
+ENTRYPOINT ["/go/src/github.com/concur/eve/docker-entrypoint.sh"]
 
-CMD ["tar", "-cvf", "-", "-C", "/go/src/github.com/concur/rohr", "Dockerfile.install", "-C", "/go/src/github.com/concur/rohr", "docker-entrypoint.sh", "-C", "/opt/bin", "eve", "-C", "/opt/bin", "evectl", "-C", "/opt/bin", "terraform", "-C", "/opt/dist", "evectl_darwin_amd64.zip", "-C", "/opt/dist", "evectl_windows_amd64.zip", "-C", "/opt/dist", "evectl_linux_amd64.zip", "-C", "/opt/dist", "evectl_SHA256SUMS"]
+CMD ["tar", "-cvf", "-", "-C", "/go/src/github.com/concur/eve", "Dockerfile.install", "-C", "/go/src/github.com/concur/eve", "docker-entrypoint.sh", "-C", "/opt/bin", "eve", "-C", "/opt/bin", "evectl", "-C", "/opt/bin", "terraform", "-C", "/opt/dist", "evectl_darwin_amd64.zip", "-C", "/opt/dist", "evectl_windows_amd64.zip", "-C", "/opt/dist", "evectl_linux_amd64.zip", "-C", "/opt/dist", "evectl_SHA256SUMS"]

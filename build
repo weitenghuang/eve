@@ -4,7 +4,7 @@ set -e
 
 ENVIRONMENT="${ENVIRONMENT:-DEV}"
 
-image_name="quay.io/concur_platform/rohr"
+image_name="quay.io/concur_platform/eve"
 if [ ! -z "$1" ]; then
   image_name=$1
 fi
@@ -14,18 +14,18 @@ if [ ! -z "$2" ]; then
   version=$2
 fi
 
-echo ">>> Build Rohr installation binary docker image..."
+echo ">>> Build Eve installation binary docker image..."
 if [ $ENVIRONMENT == "CIRCLE_CI" ]; then
-  sudo docker build --rm=false -t rohr-binary-build .
+  sudo docker build --rm=false -t eve-binary-build .
 else
-  docker build -t rohr-binary-build .
+  docker build -t eve-binary-build .
 fi
 
-echo ">>> Install Rohr binary into release docker image..."
+echo ">>> Install Eve binary into release docker image..."
 if [ $ENVIRONMENT == "CIRCLE_CI" ]; then
-  sudo docker run --rm rohr-binary-build | sudo docker build --rm=false -t "$image_name:$version" --no-cache -f Dockerfile.install -
+  sudo docker run --rm eve-binary-build | sudo docker build --rm=false -t "$image_name:$version" --no-cache -f Dockerfile.install -
 else
-  docker run --rm rohr-binary-build | docker build -t "$image_name:$version" --no-cache -f Dockerfile.install -
-  echo ">>> Remove Rohr installation binary docker image..."
-  docker rmi rohr-binary-build
+  docker run --rm eve-binary-build | docker build -t "$image_name:$version" --no-cache -f Dockerfile.install -
+  echo ">>> Remove Eve installation binary docker image..."
+  docker rmi eve-binary-build
 fi

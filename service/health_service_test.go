@@ -1,9 +1,9 @@
 package service_test
 
 import (
-	"github.com/concur/rohr"
-	"github.com/concur/rohr/pkg/config"
-	"github.com/concur/rohr/service"
+	"github.com/concur/eve"
+	"github.com/concur/eve/pkg/config"
+	"github.com/concur/eve/service"
 	"reflect"
 	"testing"
 )
@@ -20,13 +20,13 @@ func TestHealthService_New(t *testing.T) {
 func TestHealthService_GetHealth(t *testing.T) {
 	errCount := 6
 	sysConfig := config.NewSystemConfig()
-	mock_healthInfo := &rohr.HealthInfo{
+	mock_healthInfo := &eve.HealthInfo{
 		Hostname: sysConfig.Hostname,
 		Metadata: map[string]string{
 			"Version":     sysConfig.Version,
 			"Environment": sysConfig.Environment,
 		},
-		Errors: make([]rohr.Error, errCount),
+		Errors: make([]eve.Error, errCount),
 		Uptime: "",
 	}
 

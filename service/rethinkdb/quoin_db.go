@@ -2,7 +2,7 @@ package rethinkdb
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr"
+	"github.com/concur/eve"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"strings"
 	"time"
@@ -13,7 +13,7 @@ const (
 	QUOIN_ARCHIVE_TABLE = "quoinArchive"
 )
 
-func (db *DbSession) InsertQuoin(quoin *rohr.Quoin) error {
+func (db *DbSession) InsertQuoin(quoin *eve.Quoin) error {
 	res, err := r.DB(db.DbName).Table(QUOIN_TABLE).Insert(
 		map[string]interface{}{
 			"Id":         r.UUID(quoin.Name),
@@ -47,8 +47,8 @@ func (db *DbSession) UpdateQuoin(quoinName string, value interface{}) error {
 	return nil
 }
 
-func (db *DbSession) GetQuoinByName(name string) (*rohr.Quoin, error) {
-	var quoin rohr.Quoin
+func (db *DbSession) GetQuoinByName(name string) (*eve.Quoin, error) {
+	var quoin eve.Quoin
 	cursor, err := r.DB(db.DbName).Table(QUOIN_TABLE).Get(r.UUID(name)).Run(db.Session)
 	defer cursor.Close()
 	if err != nil {
@@ -63,7 +63,7 @@ func (db *DbSession) GetQuoinByName(name string) (*rohr.Quoin, error) {
 	return &quoin, nil
 }
 
-func (db *DbSession) InsertQuoinArchive(quoinArchive *rohr.QuoinArchive) error {
+func (db *DbSession) InsertQuoinArchive(quoinArchive *eve.QuoinArchive) error {
 	res, err := r.DB(db.DbName).Table(QUOIN_ARCHIVE_TABLE).Insert(
 		map[string]interface{}{
 			"QuoinName": quoinArchive.QuoinName,
@@ -98,8 +98,8 @@ func (db *DbSession) InsertQuoinArchive(quoinArchive *rohr.QuoinArchive) error {
 	return nil
 }
 
-func (db *DbSession) GetQuoinArchiveById(id string) (*rohr.QuoinArchive, error) {
-	var quoinArchive rohr.QuoinArchive
+func (db *DbSession) GetQuoinArchiveById(id string) (*eve.QuoinArchive, error) {
+	var quoinArchive eve.QuoinArchive
 	cursor, err := r.DB(db.DbName).Table(QUOIN_ARCHIVE_TABLE).Get(id).Run(db.Session)
 	defer cursor.Close()
 	if err != nil {

@@ -2,9 +2,9 @@ package service
 
 import (
 	"fmt"
-	"github.com/concur/rohr"
-	"github.com/concur/rohr/pkg/config"
-	"github.com/concur/rohr/service/health"
+	"github.com/concur/eve"
+	"github.com/concur/eve/pkg/config"
+	"github.com/concur/eve/service/health"
 	"time"
 )
 
@@ -13,10 +13,10 @@ var startTime = time.Now()
 type HealthService struct {
 }
 
-func (h *HealthService) GetHealth() *rohr.HealthInfo {
+func (h *HealthService) GetHealth() *eve.HealthInfo {
 	sysConfig := config.NewSystemConfig()
 
-	healthInfo := &rohr.HealthInfo{
+	healthInfo := &eve.HealthInfo{
 		Hostname: sysConfig.Hostname,
 		Metadata: map[string]string{
 			"Version":     sysConfig.Version,
@@ -24,7 +24,7 @@ func (h *HealthService) GetHealth() *rohr.HealthInfo {
 		},
 	}
 
-	errors := make([]rohr.Error, 0)
+	errors := make([]eve.Error, 0)
 
 	rethinkChecker := health.NewRethinkdbChecker()
 	if err := rethinkChecker.Ping(); err != nil {

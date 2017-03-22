@@ -1,25 +1,25 @@
 FROM quay.io/concur_platform/alpine:3.5
 MAINTAINER Concur Platform R&D <platform-engineering@concur.com>
 
-ENV PATH="$PATH:/opt/rohr/bin"
+ENV PATH="$PATH:/opt/eve/bin"
 
-WORKDIR "/opt/rohr"
+WORKDIR "/opt/eve"
 
 RUN mkdir bin && mkdir dist
 
-COPY eve /opt/rohr/bin/eve
-COPY evectl /opt/rohr/bin/evectl
-COPY terraform /opt/rohr/bin/terraform
-COPY docker-entrypoint.sh /opt/rohr/bin/entrypoint.sh
+COPY eve /opt/eve/bin/eve
+COPY evectl /opt/eve/bin/evectl
+COPY terraform /opt/eve/bin/terraform
+COPY docker-entrypoint.sh /opt/eve/bin/entrypoint.sh
 
-COPY evectl_linux_amd64.zip /opt/rohr/dist
-COPY evectl_darwin_amd64.zip /opt/rohr/dist
-COPY evectl_windows_amd64.zip /opt/rohr/dist
-COPY evectl_SHA256SUMS /opt/rohr/dist
+COPY evectl_linux_amd64.zip /opt/eve/dist
+COPY evectl_darwin_amd64.zip /opt/eve/dist
+COPY evectl_windows_amd64.zip /opt/eve/dist
+COPY evectl_SHA256SUMS /opt/eve/dist
 
 RUN apk update \
  && apk --update add git
 
-ENTRYPOINT ["/opt/rohr/bin/entrypoint.sh"]
+ENTRYPOINT ["/opt/eve/bin/entrypoint.sh"]
 
 CMD ["eve"]

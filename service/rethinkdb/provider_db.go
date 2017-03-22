@@ -1,7 +1,7 @@
 package rethinkdb
 
 import (
-	"github.com/concur/rohr"
+	"github.com/concur/eve"
 	r "gopkg.in/gorethink/gorethink.v3"
 )
 
@@ -9,8 +9,8 @@ const (
 	PROVIDER_TABLE = "provider"
 )
 
-func (db *DbSession) GetProviderByName(name string) (*rohr.Provider, error) {
-	var provider rohr.Provider
+func (db *DbSession) GetProviderByName(name string) (*eve.Provider, error) {
+	var provider eve.Provider
 	cursor, err := r.DB(db.DbName).Table(PROVIDER_TABLE).Get(r.UUID(name)).Run(db.Session)
 	defer cursor.Close()
 	if err != nil {

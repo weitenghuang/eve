@@ -3,12 +3,12 @@ package httprouter
 import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr"
+	"github.com/concur/eve"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
-func getHealthHandler(healthService rohr.HealthService) httprouter.Handle {
+func getHealthHandler(healthService eve.HealthService) httprouter.Handle {
 	return func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 		log.Printf("Invoke GetHealth API")
 

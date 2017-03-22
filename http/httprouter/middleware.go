@@ -3,7 +3,7 @@ package httprouter
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr/pkg/vault"
+	"github.com/concur/eve/pkg/vault"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )

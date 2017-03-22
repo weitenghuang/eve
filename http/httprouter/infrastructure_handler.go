@@ -3,8 +3,8 @@ package httprouter
 import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/rohr"
-	"github.com/concur/rohr/service"
+	"github.com/concur/eve"
+	"github.com/concur/eve/service"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -40,9 +40,9 @@ func getInfraHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params
 	log.Printf("GetInfrastructure API returns: %#v", struct {
 		Id   string
 		Name string
-		*rohr.Quoin
-		rohr.Status
-		Variables []rohr.QuoinVar
+		*eve.Quoin
+		eve.Status
+		Variables []eve.QuoinVar
 	}{
 		infrastructure.Id,
 		infrastructure.Name,

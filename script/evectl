@@ -144,8 +144,8 @@ connect() {
 main() {
   command="$1"
 
-  if [ -f "$GOPATH/src/github.com/concur/rohr/.devpassword" ]; then
-    source "$GOPATH/src/github.com/concur/rohr/.devpassword"
+  if [ -f "$GOPATH/src/github.com/concur/eve/.devpassword" ]; then
+    source "$GOPATH/src/github.com/concur/eve/.devpassword"
   else
     echo "Enter devop user password: "; read -s devop_pwd
     export devop_pwd="${devop_pwd}"

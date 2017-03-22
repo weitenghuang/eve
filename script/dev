@@ -5,7 +5,7 @@ export EVE_DB_PORT=28015
 export EVE_QUEUE_PORT=4222
 export EVE_PORT=443
 
-vault_fqdn="rohr_vault"
+vault_fqdn="eve_vault"
 vault_port=8200
 password_file=".devpassword"
 
@@ -70,7 +70,7 @@ certgen() {
 
 start_vault() {
   echo "Start vault server..."
-  [ ! "$(docker ps | grep ${vault_fqdn})" ] && docker run --name "${vault_fqdn}" --cap-add IPC_LOCK --network=rohr_network --ip=172.16.238.128 -d -v $PWD/vault:/opt/etc/vault -p "${vault_port}:${vault_port}" quay.io/concur_platform/vault:0.6.4-5b34ba3 /opt/bin/vault server -config=/opt/etc/vault/dev.config -log-level=info
+  [ ! "$(docker ps | grep ${vault_fqdn})" ] && docker run --name "${vault_fqdn}" --cap-add IPC_LOCK --network=eve_network --ip=172.16.238.128 -d -v $PWD/vault:/opt/etc/vault -p "${vault_port}:${vault_port}" quay.io/concur_platform/vault:0.6.4-5b34ba3 /opt/bin/vault server -config=/opt/etc/vault/dev.config -log-level=info
   while [ $(http http://localhost:${vault_port}/v1/sys/health | jq -r '.version') != "0.6.4" ]; do
     echo "vault is not ready, please wait..."
     sleep 1
@@ -130,9 +130,9 @@ END
 
 down_docker() {
   docker-compose down
-  docker stop rohr_vault &>/dev/null
-  docker rm rohr_vault &>/dev/null
-  docker network rm rohr_network &>/dev/null
+  docker stop eve_vault &>/dev/null
+  docker rm eve_vault &>/dev/null
+  docker network rm eve_network &>/dev/null
   if [ -f ./.env ]; then
     rm ./.env
   fi
@@ -145,8 +145,8 @@ clear_docker() {
   docker rm `docker ps -q -f status=exited` &>/dev/null
   docker rmi `docker images -f "dangling=true" -q` &>/dev/null
   docker volume rm `docker volume ls -q` &>/dev/null
-  if [[ "$(docker images -q rohr_eve 2> /dev/null)" != "" ]]; then
-    docker rmi rohr_eve
+  if [[ "$(docker images -q eve_eve 2> /dev/null)" != "" ]]; then
+    docker rmi eve_eve
   fi
   rm ./vault_credentials.json 2>&1
   rm -rf ./vault/data 2>&1
@@ -160,10 +160,10 @@ main() {
       envgen
       ;;
     "rebuild")
-      docker-compose build eve
+      docker-compose build api
       ;;
     "up")
-      [ ! "$(docker network ls | grep rohr_network)" ] && docker network create rohr_network --subnet 172.16.238.0/24 --gateway 172.16.238.1
+      [ ! "$(docker network ls | grep eve_network)" ] && docker network create eve_network --subnet 172.16.238.0/24 --gateway 172.16.238.1
       start_vault
       store_aws_secret_to_vault
       certgen
@@ -171,8 +171,8 @@ main() {
         echo "Generating .env"
         envgen
       fi
-      if [[ "$(docker images -q rohr_eve 2> /dev/null)" == "" ]]; then
-        docker-compose build eve
+      if [[ "$(docker images -q eve_eve 2> /dev/null)" == "" ]]; then
+        docker-compose build api
       fi
       docker-compose up
       ;;

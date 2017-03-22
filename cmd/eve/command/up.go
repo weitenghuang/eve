@@ -2,9 +2,9 @@ package command
 
 import (
 	"fmt"
-	"github.com/concur/rohr/http"
-	"github.com/concur/rohr/http/httprouter"
-	"github.com/concur/rohr/pkg/config"
+	"github.com/concur/eve/http"
+	"github.com/concur/eve/http/httprouter"
+	"github.com/concur/eve/pkg/config"
 	"github.com/spf13/cobra"
 )
 
