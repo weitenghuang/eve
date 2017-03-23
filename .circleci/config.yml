@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  build:
+    timezone:
+      America/Los_Angeles
+    working_directory: ~/eve
+    machine: true
+    environment:
+      ENVIRONMENT: "CIRCLE_CI"
+      EVE_PORT: 80
+      EVE_DNS: "localhost"
+      EVE_IMAGE: "quay.io/concur_platform/eve"
+    steps:
+      - checkout
+      - run: docker login --username="concur_platform+devxbot" --password="${CONCUR_QUAY_ROBOT_PWD}" --email="devx@concur.com" quay.io
+      - run:
+          name: Set version
+          command: echo "$(git rev-parse --short HEAD)" >> .tag
+      - run: docker info
+      - run:
+          name: Build eve docker image
+          command: ./build $EVE_IMAGE $(cat .tag)
+      - run: docker images
+      - run:
+          name: Run unit test
+          command: |
+            docker run -d --name testing -e "ENVIRONMENT=$ENVIRONMENT" -e "EVE_PORT=$EVE_PORT" -e "EVE_DNS=$EVE_DNS" -p $EVE_PORT:$EVE_PORT $EVE_IMAGE:$(cat .tag)
+      - run:
+          name: Stop unit test
+          command: docker stop testing
+      - deploy:
+          name: Deploy master build to image repository
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker tag $EVE_IMAGE:$(cat .tag) $EVE_IMAGE:latest
+              docker push $EVE_IMAGE
+            fi

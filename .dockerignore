@@ -2,6 +2,7 @@
 .gitignore
 .env
 .devpassword
+.circleci/
 vendor/
 vault/
 rethinkdb_data/
