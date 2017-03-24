@@ -16,6 +16,7 @@ services:
       - "$EVE_QUEUE_PORT:$EVE_QUEUE_PORT"
   api:
     build: .
+    container_name: eve
     ports:
       - "$EVE_PORT:$EVE_PORT"
     env_file: .env
