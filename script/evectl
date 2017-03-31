@@ -40,7 +40,7 @@ END
 
 create_infrastructure() {
   name="$1"
-  quoin_name="$3"
+  quoin_name="$2"
   quoin=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET "https://localhost:443/quoin/$quoin_name" --body --json)
 
   echo -e "\e[93mRequest to create infrastructure $name...\e[0m"
