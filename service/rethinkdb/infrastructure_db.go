@@ -1,10 +1,11 @@
 package rethinkdb
 
 import (
+	"time"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/concur/eve"
 	r "gopkg.in/gorethink/gorethink.v3"
-	"time"
 )
 
 const (
@@ -21,8 +22,9 @@ func (db *DbSession) InsertInfrastructure(infra *eve.Infrastructure) error {
 				"ArchiveUri": infra.Quoin.ArchiveUri,
 				"Variables":  infra.Quoin.Variables,
 			},
-			"Status":    infra.Status,
-			"Variables": infra.Variables,
+			"ProviderSlug": infra.ProviderSlug,
+			"Status":       infra.Status,
+			"Variables":    infra.Variables,
 			"Authorization": map[string]interface{}{
 				"Owner":       infra.Authorization.Owner,
 				"GroupAccess": infra.Authorization.GroupAccess,

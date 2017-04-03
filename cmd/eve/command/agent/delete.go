@@ -1,13 +1,14 @@
 package agent
 
 import (
+	"runtime"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/concur/eve"
 	"github.com/concur/eve/http"
 	"github.com/concur/eve/pkg/terraform"
 	"github.com/concur/eve/service"
 	"github.com/spf13/cobra"
-	"runtime"
 )
 
 func DeleteCmd(stateServer *http.ApiServer) *cobra.Command {
@@ -56,7 +57,8 @@ func delete(infraSvc eve.InfrastructureService, stateServer *http.ApiServer) eve
 		log.Println("Infrastructure", infra.Name, "gets Quoin Archive:", id, quoinArchive.QuoinName)
 		varfile := createVarFile(infra.Variables)
 		remoteState := stateEndpoint(stateServer, infra.Name)
-		tf := terraform.NewTerraform(infra.Name, remoteState, quoinArchive.Modules, varfile)
+		authenticator := createAuthenticator(infra.ProviderSlug)
+		tf := terraform.NewTerraformWithAuthenticator(infra.Name, remoteState, quoinArchive.Modules, varfile, authenticator)
 		if err := tf.DeleteQuoin(); err != nil {
 			toFailStatus(infra.Name)
 			log.Println(err)

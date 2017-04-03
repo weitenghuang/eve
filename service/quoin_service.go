@@ -2,11 +2,12 @@ package service
 
 import (
 	"fmt"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/concur/eve"
 	"github.com/concur/eve/pkg/terraform"
 	"github.com/concur/eve/service/rethinkdb"
-	"strings"
 )
 
 type QuoinService struct {
@@ -83,7 +84,7 @@ func (q QuoinService) CreateQuoin(quoin *eve.Quoin) (*eve.Quoin, error) {
 // CreateQuoinArchive creates Quoin archive record on database
 func (q QuoinService) CreateQuoinArchive(quoinArchive *eve.QuoinArchive) error {
 	tf := terraform.NewTerraform(quoinArchive.QuoinName, "", quoinArchive.Modules, nil)
-	if err := tf.PlanQuoin(); err != nil {
+	if err := tf.ValidateQuoin(); err != nil {
 		return err
 	}
 	log.Printf("Quoin Archive for %s is valid. Terraform plan has been generated.", quoinArchive.QuoinName)

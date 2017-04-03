@@ -28,7 +28,6 @@ func (v *VaultCredentialsProvider) Retrieve() (credentials.Value, error) {
 	creds := credentials.Value{
 		AccessKeyID:     data["accessKeyID"].(string),
 		SecretAccessKey: data["secretAccessKey"].(string),
-		SessionToken:    data["sessionToken"].(string),
 		ProviderName:    VaultCredentialsProviderName,
 	}
 

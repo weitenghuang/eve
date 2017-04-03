@@ -73,6 +73,7 @@ type Infrastructure struct {
 	State         map[string]interface{} `json:"state,omitempty"`         // Terraform state output
 	Status        Status                 `json:"status,omitempty"`        // infrastructure environment lifecycle status
 	Authorization Authorization          `json:"authorization,omitempty"` // infrastructure authorization setting
+	ProviderSlug  string                 `json:"providerSlug"`            // infrastructure provider in slug format <provider:schema-type> aws:account
 }
 
 // Team's permission on resource

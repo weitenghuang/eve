@@ -5,15 +5,17 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve/pkg/vault"
-	"github.com/pborman/uuid"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/concur/eve/pkg/vault"
+	"github.com/concur/eve/provider/aws"
+	"github.com/pborman/uuid"
 )
 
 const (
@@ -35,11 +37,12 @@ const (
 )
 
 type Terraform struct {
-	name        string
-	dir         string
-	remoteState string
-	modules     []byte
-	varfile     []byte
+	name          string
+	dir           string
+	remoteState   string
+	modules       []byte
+	varfile       []byte
+	authenticator *aws.Authenticator
 }
 
 func NewTerraform(name string, remoteState string, modules []byte, varfile []byte) *Terraform {
@@ -48,6 +51,16 @@ func NewTerraform(name string, remoteState string, modules []byte, varfile []byt
 		remoteState: remoteState,
 		modules:     modules,
 		varfile:     varfile,
+	}
+}
+
+func NewTerraformWithAuthenticator(name string, remoteState string, modules []byte, varfile []byte, authenticator *aws.Authenticator) *Terraform {
+	return &Terraform{
+		name:          name,
+		remoteState:   remoteState,
+		modules:       modules,
+		varfile:       varfile,
+		authenticator: authenticator,
 	}
 }
 
@@ -62,6 +75,22 @@ func (tf *Terraform) PlanQuoin() error {
 	}
 
 	if _, err := tf.runTerraformPlan(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tf *Terraform) ValidateQuoin() error {
+	log.Println("Prepare work directory.")
+	tf.dir = setWorkDir(tf.name, 0)
+	log.Println(tf.dir)
+	defer os.RemoveAll(tf.dir)
+
+	if err := tf.writeFileFromTarGz(PERM); err != nil {
+		return err
+	}
+
+	if err := tf.runTerraformValidate(); err != nil {
 		return err
 	}
 	return nil
@@ -223,11 +252,11 @@ func (tf *Terraform) runTerraformPlan() ([]byte, error) {
 	planCommand.Dir = tf.dir
 	planCommand.Stdout = &outBuf
 	planCommand.Stderr = &errorBuf
-	awsEnv, err := addAWSCredEnv(planCommand.Env, "secret/quoin/providers/aws/credentials")
+	providerEnv, err := tf.addProviderCredEnv(planCommand.Env)
 	if err != nil {
 		log.Println("Command loads env with error:", err)
 	}
-	planCommand.Env = awsEnv
+	planCommand.Env = providerEnv
 	if err := planCommand.Start(); err != nil {
 		log.Println("Command starts with error:", err)
 		return nil, err
@@ -248,6 +277,28 @@ func (tf *Terraform) runTerraformPlan() ([]byte, error) {
 		return tfplanBin, nil
 	}
 	return nil, fmt.Errorf("Terraform plan executed with empty output: %s", errorBuf.String())
+}
+
+func (tf *Terraform) runTerraformValidate() error {
+	var outBuf, errorBuf bytes.Buffer
+	validateCommand := exec.Command(TERRAFORM_PROCESS_NAME, "validate")
+	validateCommand.Dir = tf.dir
+	validateCommand.Stdout = &outBuf
+	validateCommand.Stderr = &errorBuf
+	if err := validateCommand.Start(); err != nil {
+		log.Println("Command starts with error:", err)
+		return err
+	}
+	if err := validateCommand.Wait(); err != nil {
+		log.Println("Command exits with error:", err)
+		errStr := errorBuf.String()
+		log.Println(errStr)
+		return fmt.Errorf(errStr)
+	}
+	if outBuf.Len() > 0 {
+		log.Println(outBuf.String())
+	}
+	return nil
 }
 
 func (tf *Terraform) runTerraformRemote() error {
@@ -304,11 +355,11 @@ func (tf *Terraform) runTerraform(action string) error {
 	planCommand.Dir = tf.dir
 	planCommand.Stdout = &outBuf
 	planCommand.Stderr = &errorBuf
-	awsEnv, err := addAWSCredEnv(planCommand.Env, "secret/quoin/providers/aws/credentials")
+	providerEnv, err := tf.addProviderCredEnv(planCommand.Env)
 	if err != nil {
 		log.Println("Command loads env with error:", err)
 	}
-	planCommand.Env = awsEnv
+	planCommand.Env = providerEnv
 	if err := planCommand.Start(); err != nil {
 		log.Println("Command starts with error:", err)
 		return err
@@ -339,9 +390,8 @@ func (tf *Terraform) writeVarFile() error {
 	return nil
 }
 
-func addAWSCredEnv(env []string, secretPath string) ([]string, error) {
-	// secretPath := "secret/quoin/providers/aws/credentials"
-	awsCred, err := vault.GetLogicalData(secretPath)
+func (tf *Terraform) addProviderCredEnv(env []string) ([]string, error) {
+	c, err := tf.authenticator.Authenticate()
 	if err != nil {
 		return nil, err
 	}
@@ -351,10 +401,10 @@ func addAWSCredEnv(env []string, secretPath string) ([]string, error) {
 	if len(env) == 0 {
 		env = os.Environ()
 	}
-	awsEnv := append(env,
-		fmt.Sprintf("%s=%s", awsKey, awsCred[awsKey]),
-		fmt.Sprintf("%s=%s", awsSecret, awsCred[awsSecret]),
-		fmt.Sprintf("%s=%s", awsToken, awsCred[awsToken]),
+	providerEnv := append(env,
+		fmt.Sprintf("%s=%s", awsKey, c.AccessKeyId),
+		fmt.Sprintf("%s=%s", awsSecret, c.SecretAccessKey),
+		fmt.Sprintf("%s=%s", awsToken, c.SessionToken),
 	)
-	return awsEnv, nil
+	return providerEnv, nil
 }
