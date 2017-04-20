@@ -90,6 +90,7 @@ func (db *DbSession) InsertQuoinArchive(quoinArchive *eve.QuoinArchive) error {
 			"/",
 			quoinArchive.Id,
 		}, "")
+	quoinData.Status = eve.VALIDATED
 	// Update Quoin with Archive's id value
 	if err := db.UpdateQuoin(quoinArchive.QuoinName, quoinData); err != nil {
 		return err

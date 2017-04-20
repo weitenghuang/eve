@@ -9,16 +9,16 @@ import (
 )
 
 type InfrastructureService struct {
-	*QuoinService
 	*eve.User
 }
+
+const (
+	INVALID_QUOIN_ERROR = "To create an infrastructure, please use a valid quoin"
+)
 
 func NewInfrastructureService(user *eve.User) *InfrastructureService {
 	return &InfrastructureService{
 		User: user,
-		QuoinService: &QuoinService{
-			User: user,
-		},
 	}
 }
 
@@ -39,6 +39,38 @@ func (infraSvc InfrastructureService) GetInfrastructure(name string) (*eve.Infra
 	}
 
 	return infrastructure, nil
+}
+
+func (infraSvc InfrastructureService) GetInfrastructuresByQuoin(quoinName string) ([]eve.Infrastructure, error) {
+	infras, err := infraSvc.getInfrastructuresByQuoin(quoinName)
+	if err != nil {
+		return nil, err
+	}
+
+	// If user is not authorized to read the infrastructure, we will only return the infrastructure's name
+	for i, infra := range infras {
+		if !infra.AuthorizedRead(infraSvc.User) {
+			infras[i] = eve.Infrastructure{Name: infra.Name}
+		}
+	}
+	return infras, err
+}
+
+func (infraSvc InfrastructureService) CountInfrastructureByQuoin(quoinName string) (int, error) {
+	infras, err := infraSvc.getInfrastructuresByQuoin(quoinName)
+	if err != nil {
+		return 0, err
+	}
+	return len(infras), nil
+}
+
+func (infraSvc InfrastructureService) getInfrastructuresByQuoin(quoinName string) ([]eve.Infrastructure, error) {
+	db := rethinkdb.DefaultSession()
+	infrastructures, err := db.GetInfrastructuresByQuoin(quoinName)
+	if err != nil {
+		return nil, err
+	}
+	return infrastructures, nil
 }
 
 func (infraSvc InfrastructureService) GetInfrastructureState(name string) (map[string]interface{}, error) {
@@ -69,12 +101,33 @@ func (infraSvc InfrastructureService) CreateInfrastructure(infra *eve.Infrastruc
 			log.Printf("Re-create existing infrastructure %s.\n", infra.Name)
 		}
 	} else {
-		archiveId := infraSvc.GetQuoinArchiveIdFromUri(infra.Quoin.ArchiveUri)
-		if archiveId != "" {
-			infra.Status = eve.VALIDATED
-		} else {
-			return fmt.Errorf("Empty archive id error: To create an infrastructure, please provide valid quoin archive id.")
+		// Validate infrastructure's quoin reference
+		quoinSvc := NewQuoinService(infraSvc.User)
+		quoin, err := quoinSvc.GetQuoin(infra.Quoin.Name)
+		if err != nil {
+			return err
 		}
+
+		if quoin == nil {
+			return fmt.Errorf(INVALID_QUOIN_ERROR)
+		}
+
+		if quoin.Status != eve.VALIDATED {
+			return fmt.Errorf(INVALID_QUOIN_ERROR)
+		}
+
+		// We allow user to use older version of quoin's archive
+		if infra.Quoin.ArchiveUri != quoin.ArchiveUri {
+			log.Infof("Current infrastructure request's %#v quoin %#v doesn't have the latest quoin archive reference %#v.", infra, infra.Quoin, quoin.ArchiveUri)
+		}
+
+		archiveId := quoinSvc.GetQuoinArchiveIdFromUri(infra.Quoin.ArchiveUri)
+		if archiveId == "" {
+			return fmt.Errorf(INVALID_QUOIN_ERROR)
+		}
+
+		infra.Status = eve.VALIDATED
+
 		db := rethinkdb.DefaultSession()
 		if err := db.InsertInfrastructure(infra); err != nil {
 			return err
@@ -196,4 +249,8 @@ func (infraSvc InfrastructureService) checkWritePermission(name string) error {
 		return fmt.Errorf("User %s is not authorized to modify infrastructure %s", infraSvc.User.Id, infra.Name)
 	}
 	return nil
+}
+
+func (infraSvc InfrastructureService) GetUser() *eve.User {
+	return infraSvc.User
 }

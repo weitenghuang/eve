@@ -77,3 +77,21 @@ func (db *DbSession) GetInfrastructureByName(name string) (*eve.Infrastructure, 
 	}
 	return &infrastructure, nil
 }
+
+func (db *DbSession) GetInfrastructuresByQuoin(name string) ([]eve.Infrastructure, error) {
+	var infrastructures []eve.Infrastructure
+	cursor, err := r.DB(db.DbName).Table(INFRA_TABLE).Filter(func(infra r.Term) r.Term {
+		return infra.Field("Status").Lt(int(eve.DESTROYED)).And(infra.Field("Quoin").Field("Name").Match(name))
+	}).Run(db.Session)
+	defer cursor.Close()
+	if err != nil {
+		return nil, err
+	}
+	if cursor.IsNil() {
+		return nil, nil
+	}
+	if err = cursor.All(&infrastructures); err != nil {
+		return nil, err
+	}
+	return infrastructures, nil
+}

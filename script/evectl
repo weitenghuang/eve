@@ -59,6 +59,13 @@ END
 
 }
 
+delete_quoin() {
+  name="$1"
+  echo -e "\e[93mRequest to delete quoin $name...\e[0m"
+  http --timeout 90 -a devop:${devop_pwd} --verify=no -f DELETE "https://localhost:443/quoin/$name" Content-Type:"application/json" --verbose
+  echo -e "\e[92mRequest is accepted\e[0m"
+}
+
 delete_infrastructure() {
   name="$1"
   echo -e "\e[93mRequest to delete infrastructure $name...\e[0m"
@@ -83,10 +90,10 @@ create() {
 delete() {
   command="$1"
   case $command in
-    # "quoin")
-    #   shift
-    #   delete_quoin $@
-    #   ;;
+    "quoin")
+      shift
+      delete_quoin $@
+      ;;
     "infrastructure")
       shift
       delete_infrastructure $@

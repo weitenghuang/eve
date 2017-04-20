@@ -74,9 +74,27 @@ func (q QuoinService) GetQuoinArchiveIdFromUri(archiveUri string) string {
 // CreateQuoin creates Quoin record on database and calls CreateQuoinArchive
 func (q QuoinService) CreateQuoin(quoin *eve.Quoin) (*eve.Quoin, error) {
 	db := rethinkdb.DefaultSession()
-	err := db.InsertQuoin(quoin)
+	qu, err := db.GetQuoinByName(quoin.Name)
 	if err != nil {
-		return quoin, err
+		return nil, err
+	}
+
+	if qu != nil {
+		if qu.Status != eve.OBSOLETED {
+			return qu, fmt.Errorf("Quoin %s already exists", quoin.Name)
+		} else {
+			if !qu.AuthorizedWrite(q.User) {
+				return nil, fmt.Errorf("User %s is not authorized to re-create Quoin %s", q.User.Id, quoin.Name)
+			}
+			if err := db.UpdateQuoin(quoin.Name, quoin); err != nil {
+				return nil, err
+			}
+			return quoin, nil
+		}
+	}
+
+	if err := db.InsertQuoin(quoin); err != nil {
+		return nil, err
 	}
 	return quoin, nil
 }
@@ -97,7 +115,36 @@ func (q QuoinService) CreateQuoinArchive(quoinArchive *eve.QuoinArchive) error {
 }
 
 func (q QuoinService) DeleteQuoin(name string) error {
-	// Can not delete the Quoin if it is still in used by an infratructure
+	db := rethinkdb.DefaultSession()
+	quoin, err := db.GetQuoinByName(name)
+	if err != nil {
+		return err
+	}
+
+	if quoin == nil {
+		return fmt.Errorf("Quoin %s doesn't exist", name)
+	}
+
+	if !quoin.AuthorizedWrite(q.User) {
+		return fmt.Errorf("User %s is not authorized to delete Quoin %s", q.User.Id, name)
+	}
+
+	infraSvc := NewInfrastructureService(q.User)
+	count, err := infraSvc.CountInfrastructureByQuoin(name)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return fmt.Errorf("Quoin is still used by infrastructure and cannot be deleted")
+	}
+
+	if quoin.Status != eve.OBSOLETED {
+		quoin.Status = eve.OBSOLETED
+		if err := db.UpdateQuoin(name, quoin); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

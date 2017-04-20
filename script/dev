@@ -145,8 +145,8 @@ clear_docker() {
   docker rm `docker ps -q -f status=exited` &>/dev/null
   docker rmi `docker images -f "dangling=true" -q` &>/dev/null
   docker volume rm `docker volume ls -q` &>/dev/null
-  if [[ "$(docker images -q eve_eve 2> /dev/null)" != "" ]]; then
-    docker rmi eve_eve
+  if [[ "$(docker images -q eve_api 2> /dev/null)" != "" ]]; then
+    docker rmi eve_api
   fi
   rm ./vault_credentials.json 2>&1
   rm -rf ./vault/data 2>&1

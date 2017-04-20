@@ -119,3 +119,23 @@ func postQuoinArchiveHandler(w http.ResponseWriter, r *http.Request, p httproute
 	})
 	log.Printf("CreateQuoinArchive API returns: %#v", quoinArchive.Id)
 }
+
+func deleteQuoinHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	user, err := getUser(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	quoinService := service.NewQuoinService(user)
+
+	log.Printf("Invoke DeleteQuoin API")
+	name := p.ByName(P_NAME)
+	if err := quoinService.DeleteQuoin(name); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("DeleteQuoin API returns error: %#v", err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	log.Printf("DeleteQuoin API completed: %v", name)
+}

@@ -60,6 +60,8 @@ func (r *Router) RegisterRoute(apiServer *http.ApiServer) http.Handler {
 	log.Infoln("POST", INFRA_PATH, "with postInfraHandler")
 	r.httpRouter.POST(INFRA_NAME_STATE_PATH, mChain(postInfraStateHandler, authentication))
 	log.Infoln("POST", INFRA_NAME_STATE_PATH, "with postInfraStateHandler")
+	r.httpRouter.DELETE(QUOIN_NAME_PATH, mChain(deleteQuoinHandler, authentication))
+	log.Infoln("DELETE", QUOIN_NAME_PATH, "with deleteQuoinHandler")
 	r.httpRouter.DELETE(INFRA_NAME_PATH, mChain(deleteInfraHandler, authentication))
 	log.Infoln("DELETE", INFRA_NAME_PATH, "with deleteInfraHandler")
 	r.httpRouter.DELETE(INFRA_NAME_STATE_PATH, mChain(deleteInfraStateHandler, authentication))

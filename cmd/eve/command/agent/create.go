@@ -42,8 +42,9 @@ func create(infraSvc eve.InfrastructureService, stateServer *http.ApiServer) eve
 		if err := infraSvc.UpdateInfrastructureStatus(infra.Name, eve.RUNNING); err != nil {
 			log.Println(err)
 		}
-		id := infraSvc.GetQuoinArchiveIdFromUri(infra.Quoin.ArchiveUri)
-		quoinArchive, err := infraSvc.GetQuoinArchive(id)
+		quoinSvc := service.NewQuoinService(getAgentUser())
+		id := quoinSvc.GetQuoinArchiveIdFromUri(infra.Quoin.ArchiveUri)
+		quoinArchive, err := quoinSvc.GetQuoinArchive(id)
 		if err != nil {
 			toFailStatus(infra.Name)
 			log.Println(err)

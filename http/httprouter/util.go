@@ -23,7 +23,7 @@ func buildQuoin(r *http.Request, apiServer *eveHttp.ApiServer) (*eve.Quoin, erro
 		return nil, err
 	}
 	quoin.ArchiveUri = fmt.Sprintf("%s://%s%s/quoin/%s/upload", apiServer.Scheme, apiServer.DNS, apiServer.Addr, quoin.Name)
-
+	quoin.Status = eve.DEFAULT
 	bindAuthorization(&quoin, r)
 	return &quoin, nil
 }

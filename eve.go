@@ -16,9 +16,10 @@ type QuoinService interface {
 }
 
 type InfrastructureService interface {
-	QuoinService
 	GetInfrastructure(name string) (*Infrastructure, error)
+	GetInfrastructuresByQuoin(quoinName string) ([]Infrastructure, error)
 	GetInfrastructureState(name string) (map[string]interface{}, error)
+	CountInfrastructureByQuoin(quoinName string) (int, error)
 	CreateInfrastructure(infra *Infrastructure) error
 	DeleteInfrastructure(name string) error
 	DeleteInfrastructureState(name string) error
@@ -49,6 +50,7 @@ type Quoin struct {
 	Name          string        `json:"name"`                    // quoin unique name as db index field
 	ArchiveUri    string        `json:"archiveUri,omitempty"`    // quoin scheme://host:port/quoin/name/upload/
 	Variables     []QuoinVar    `json:"variables,omitempty"`     // quoin module input variables
+	Status        Status        `json:"status,omitempty"`        // quoin lifecycle status
 	Authorization Authorization `json:"authorization,omitempty"` // quoin authorization setting
 }
 
