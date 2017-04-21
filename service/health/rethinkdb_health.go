@@ -1,6 +1,7 @@
 package health
 
 import (
+	"crypto/tls"
 	"github.com/concur/eve"
 	"github.com/concur/eve/pkg/config"
 	r "gopkg.in/gorethink/gorethink.v3"
@@ -15,6 +16,7 @@ type RethinkdbChecker struct {
 	InitialCap   int
 	MaxOpen      int
 	Timeout      time.Duration
+	TLSConfig    *tls.Config
 }
 
 func NewRethinkdbChecker() *RethinkdbChecker {
@@ -25,6 +27,7 @@ func NewRethinkdbChecker() *RethinkdbChecker {
 		InitialCap:   1,
 		MaxOpen:      1,
 		Timeout:      1 * time.Second,
+		TLSConfig:    rethinkConfig.TLSConfig,
 	}
 }
 
@@ -38,6 +41,7 @@ func (rChecker *RethinkdbChecker) Ping() *eve.Error {
 		InitialCap: rChecker.InitialCap,
 		MaxOpen:    rChecker.MaxOpen,
 		Timeout:    rChecker.Timeout,
+		TLSConfig:  rChecker.TLSConfig,
 	})
 
 	if err != nil {
@@ -68,6 +72,7 @@ func (rChecker *RethinkdbChecker) DbReady() *eve.Error {
 		InitialCap: rChecker.InitialCap,
 		MaxOpen:    rChecker.MaxOpen,
 		Timeout:    rChecker.Timeout,
+		TLSConfig:  rChecker.TLSConfig,
 	})
 
 	if err != nil {
@@ -113,6 +118,7 @@ func (rChecker *RethinkdbChecker) TableReady() *eve.Error {
 		InitialCap: rChecker.InitialCap,
 		MaxOpen:    rChecker.MaxOpen,
 		Timeout:    rChecker.Timeout,
+		TLSConfig:  rChecker.TLSConfig,
 	})
 
 	if err != nil {

@@ -1,7 +1,10 @@
 package config
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -34,6 +37,7 @@ type RethinkDbConfig struct {
 	DatabaseName string
 	InitialCap   int
 	MaxOpen      int
+	TLSConfig    *tls.Config
 }
 
 type NatsConfig struct {
@@ -93,12 +97,41 @@ func NewRethinkDbConfig() *RethinkDbConfig {
 		dbName = DEFAULT_DB_NAME
 	}
 
+	tlsConfig := &tls.Config{}
+	rootCAFile := os.Getenv("EVE_DB_CA_CERT")
+
+	if rootCAFile != "" {
+		pool, err := LoadCAFile(rootCAFile)
+		if err != nil {
+			log.Println(err.Error())
+		} else {
+			tlsConfig.RootCAs = pool
+		}
+	}
+
 	return &RethinkDbConfig{
 		Url:          url,
 		DatabaseName: dbName,
 		InitialCap:   4,
 		MaxOpen:      8,
+		TLSConfig:    tlsConfig,
 	}
+}
+
+func LoadCAFile(caFile string) (*x509.CertPool, error) {
+	pool := x509.NewCertPool()
+
+	pem, err := ioutil.ReadFile(caFile)
+	if err != nil {
+		return nil, fmt.Errorf("Error loading CA File: %s", err)
+	}
+
+	ok := pool.AppendCertsFromPEM(pem)
+	if !ok {
+		return nil, fmt.Errorf("Error loading CA File: Couldn't parse PEM in: %s", caFile)
+	}
+
+	return pool, nil
 }
 
 func NewNatsConfig() *NatsConfig {

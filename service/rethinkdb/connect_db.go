@@ -23,6 +23,7 @@ func buildSession() error {
 		Address:    dbConfig.Url,
 		InitialCap: dbConfig.InitialCap,
 		MaxOpen:    dbConfig.MaxOpen,
+		TLSConfig:  dbConfig.TLSConfig,
 	})
 	if err != nil {
 		return err
