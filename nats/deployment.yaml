@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: nats
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: nats
+    spec:
+      containers:
+      - name: nats
+        image: nats:0.9.6
+        ports:
+        - containerPort: 8222
+        - containerPort: 6222
+        - containerPort: 4222

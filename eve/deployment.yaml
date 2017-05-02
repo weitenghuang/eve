@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: eve
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: eve
+    spec:
+      containers:
+      - name: eve
+        image: quay.io/concur_platform/eve:c7e1de6
+        args: ["eve", "up"]
+        ports:
+        - containerPort: 443
+        env:
+        # TODO(NL): Need to add all necessary env's here for Eve.
+        - name: VAULT_ADDR
+          value:
+      - name: rethink-proxy
+        image: # TODO(NL): work with Wei to get a rethink-proxy docker image created.
+        args: [ ] # TODO(NL): Add args here to start container.
+        ports:
+        - containerPort: 29015
