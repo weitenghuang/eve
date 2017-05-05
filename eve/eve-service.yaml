@@ -7,8 +7,8 @@ metadata:
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
-    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: # TODO(NL): This will be the arn of the SSL cert that we previously created/uploaded to AWS.
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "https"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:iam::197631097688:server-certificate/eve-server-cert
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "ssl"
 spec:
   selector:
     name: eve

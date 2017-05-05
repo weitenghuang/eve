@@ -1,0 +1,40 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: eve
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: eve
+    spec:
+      containers:
+      - name: eve
+        image: quay.io/concur_platform/eve:7d068e6
+        args: ["eve", "up"]
+        ports:
+        - containerPort: 443
+        volumeMounts:
+        - name: eve-tls
+          mountPath: /opt/eve/tls
+          readOnly: true
+        - name: backend-tls
+          mountPath: /opt/backend/tls
+          readOnly: true
+        envFrom:
+        - configMapRef:
+            name: eve-config
+        env:
+        - name: VAULT_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: vault-token
+              key: token
+      volumes:
+      - name: eve-tls
+        secret:
+          secretName: eve-tls
+      - name: backend-tls
+        secret:
+          secretName: backend-tls

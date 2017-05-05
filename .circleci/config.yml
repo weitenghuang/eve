@@ -1,0 +1,14 @@
+version: 2
+jobs:
+  build:
+    timezone:
+      America/Los_Angeles
+    working_directory: .
+    machine: true
+    steps:
+      - run:
+          command: echo "Deploy branch ignored. Skipping build."
+    branches:
+      ignore:
+        - deploy
+        - /eve-deployment-*/
