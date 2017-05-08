@@ -20,3 +20,4 @@ spec:
         protocol: TCP
         port: 4222
         targetPort: 4222
+    clusterIP: "None"
