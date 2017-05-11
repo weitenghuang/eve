@@ -106,7 +106,7 @@ func (rChecker *RethinkdbChecker) DbReady() *eve.Error {
 		Type:        "RethinkDB",
 		Description: "DbReady error: eve db not found",
 		Metadata:    meta,
-		Error:       err.Error(),
+		Error:       "eve db not found",
 	}
 }
 
