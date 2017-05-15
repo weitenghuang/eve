@@ -18,7 +18,7 @@ connect       Connect to \"platform-kubernete\" type of cluster infrastructure
 create_quoin() {
   name="$1"
   echo -e "\e[93mRequest to create quoin $name ...\e[0m"
-  cat <<END | http --timeout 90 -a devop:${devop_pwd} --verify=no -f POST https://localhost:443/quoin Content-Type:"application/json" --verbose
+  cat <<END | http --timeout 90 -a devop:${devop_pwd} --verify=no -f POST https://${eve_dns}:443/quoin Content-Type:"application/json" --verbose
 {
   "name": "$name"
 }
@@ -33,7 +33,7 @@ END
   fi
 
   echo -e "\n\e[93mUpload quoin tarball to server...\e[0m"
-  http --timeout 90 -a devop:${devop_pwd} --verify=no -f POST https://localhost:443/quoin/$name/upload Content-Type:"application/gzip" <quoin.tar.gz --verbose
+  http --timeout 90 -a devop:${devop_pwd} --verify=no -f POST https://${eve_dns}:443/quoin/$name/upload Content-Type:"application/gzip" <quoin.tar.gz --verbose
 
   echo -e "\e[92mQuoin is created on eve server\e[0m"
 }
@@ -42,10 +42,10 @@ create_infrastructure() {
   name="$1"
   quoin_name="$2"
   provider_slug="$3"
-  quoin=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET "https://localhost:443/quoin/$quoin_name" --body --json)
+  quoin=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET "https://${eve_dns}:443/quoin/$quoin_name" --body --json)
 
   echo -e "\e[93mRequest to create infrastructure $name...\e[0m"
-  cat <<END | http --timeout 90 -a devop:${devop_pwd} --verify=no -f POST https://localhost:443/infrastructure Content-Type:"application/json" --verbose
+  cat <<END | http --timeout 90 -a devop:${devop_pwd} --verify=no -f POST https://${eve_dns}:443/infrastructure Content-Type:"application/json" --verbose
 {
     "name": "$name",
     "quoin": $quoin,
@@ -62,14 +62,14 @@ END
 delete_quoin() {
   name="$1"
   echo -e "\e[93mRequest to delete quoin $name...\e[0m"
-  http --timeout 90 -a devop:${devop_pwd} --verify=no -f DELETE "https://localhost:443/quoin/$name" Content-Type:"application/json" --verbose
+  http --timeout 90 -a devop:${devop_pwd} --verify=no -f DELETE "https://${eve_dns}:443/quoin/$name" Content-Type:"application/json" --verbose
   echo -e "\e[92mRequest is accepted\e[0m"
 }
 
 delete_infrastructure() {
   name="$1"
   echo -e "\e[93mRequest to delete infrastructure $name...\e[0m"
-  http --timeout 90 -a devop:${devop_pwd} --verify=no -f DELETE https://localhost:443/infrastructure/$name Content-Type:"application/json" --verbose
+  http --timeout 90 -a devop:${devop_pwd} --verify=no -f DELETE https://${eve_dns}:443/infrastructure/$name Content-Type:"application/json" --verbose
   echo -e "\e[92mRequest is accepted\e[0m"
 }
 
@@ -103,7 +103,7 @@ delete() {
 
 status() {
   name="$1"
-  status_num=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET https://localhost:443/infrastructure/$name --body --json|jq '.status')
+  status_num=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET https://${eve_dns}:443/infrastructure/$name --body --json|jq '.status')
   status_print=""
   case $status_num in
     "2")
@@ -130,21 +130,22 @@ status() {
 
 state() {
   name="$1"
-  status_num=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET https://localhost:443/infrastructure/$name --body --json|jq '.status')
+  status_num=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET https://${eve_dns}:443/infrastructure/$name --body --json|jq '.status')
   if [ $status_num -eq 4 ]; then
     echo "eve server is processing your infrastructure request...\n"
     sleep 1
     state $name
   else
-    http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET https://localhost:443/infrastructure/$name/state --body --json|jq '.'
+    http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET https://${eve_dns}:443/infrastructure/$name/state --body --json|jq '.'
   fi
 }
 
 connect() {
+  echo $PWD
   name="$1"
-  servername=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET https://localhost:443/infrastructure/$name/state --body --json| jq -r '.modules[0].outputs.kubernetes_api_dns.value')
-  kubectl config set-cluster $name --server=https://$servername --certificate-authority=ca-chain.pem
-  kubectl config set-credentials "$name-admin" --certificate-authority=ca-chain.pem --client-key=admin-key.pem --client-certificate=admin.pem
+  servername=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET https://${eve_dns}:443/infrastructure/$name/state --body --json| jq -r '.modules[0].outputs.kubernetes_api_dns.value')
+  kubectl config set-cluster $name --server=https://$servername --certificate-authority=$PWD/certs/ca-chain.pem
+  kubectl config set-credentials "$name-admin" --certificate-authority=$PWD/certs/ca-chain.pem --client-key=$PWD/certs/admin-key.pem --client-certificate=$PWD/certs/admin.pem
   kubectl config set-context $name --cluster=$name --user="$name-admin"
   kubectl config use-context $name
   kubectl cluster-info
@@ -156,8 +157,14 @@ main() {
   if [ -f "$GOPATH/src/github.com/concur/eve/.devpassword" ]; then
     source "$GOPATH/src/github.com/concur/eve/.devpassword"
   else
-    echo "Enter devop user password: "; read -s devop_pwd
-    export devop_pwd="${devop_pwd}"
+    if [ -z "$devop_pwd" ]; then
+      echo "Enter devop user password: "; read -s devop_pwd
+      export devop_pwd="${devop_pwd}"
+    fi
+    if [ -z "$eve_dns" ]; then
+      echo "Enter eve dns: "; read -s eve_dns
+      export eve_dns="${eve_dns}"
+    fi
   fi
   case $command in
     "" | "-h" | "--help")

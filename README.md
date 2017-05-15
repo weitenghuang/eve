@@ -62,7 +62,7 @@ evectl create quoin your_quoin_name
 
 - Create a new infrastructure based on your quoin
 ```sh
-evectl create infrastructure your_infrastructure_name using your_quoin_name
+evectl create infrastructure your_infrastructure_name your_quoin_name your_provider_slug
 ```
 
 - Check your infrastructure status
