@@ -27,12 +27,14 @@ func getProviderHandler(w http.ResponseWriter, r *http.Request, p httprouter.Par
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	if provider == nil {
+		http.Error(w, RESOURCE_NOT_EXIST, http.StatusNotFound)
 		log.Println("GetProvider API returns: nil")
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(provider); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Printf("Encoding provider returns error: %#v", err)

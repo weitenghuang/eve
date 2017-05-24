@@ -25,13 +25,14 @@ func getInfraHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		log.Printf("GetInfrastructure API returns error: %#v", err)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	if infrastructure == nil {
+		http.Error(w, RESOURCE_NOT_EXIST, http.StatusNotFound)
 		log.Println("GetInfrastructure API returns: nil")
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(infrastructure); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Printf("Encoding infrastructure returns error: %#v", err)
@@ -69,9 +70,9 @@ func getInfraStateHandler(w http.ResponseWriter, r *http.Request, p httprouter.P
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	if len(state) == 0 {
+		http.Error(w, RESOURCE_NOT_EXIST, http.StatusNotFound)
+		log.Println("GetInfrastructureState API returns: nil")
 		return
 	} else {
 		// Terraform store user credentials on remote state server. We should propose the change to terraform
@@ -80,6 +81,9 @@ func getInfraStateHandler(w http.ResponseWriter, r *http.Request, p httprouter.P
 			delete(state, "remote")
 		}
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(state); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Printf("Encoding infrastructure state returns error: %#v", err)

@@ -16,6 +16,10 @@ const (
 	INFRA_PATH    = "/infrastructure"
 )
 
+const (
+	RESOURCE_NOT_EXIST = "Resource Does Not Exist"
+)
+
 var (
 	PROVIDER_NAME_PATH    string = fmt.Sprintf("%s/:%s", PROVIDER_PATH, P_NAME)
 	QUOIN_NAME_PATH       string = fmt.Sprintf("%s/:%s", QUOIN_PATH, P_NAME)

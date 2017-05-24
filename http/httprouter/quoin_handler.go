@@ -28,12 +28,14 @@ func getQuoinHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	if quoin == nil {
+		http.Error(w, RESOURCE_NOT_EXIST, http.StatusNotFound)
 		log.Println("GetQuoin API returns: nil")
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(quoin); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		log.Printf("Encoding quoin returns error: %#v", err)
