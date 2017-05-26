@@ -1,0 +1,46 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    db: rethinkdb
+    role: admin
+  name: rethinkdb-admin
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        db: rethinkdb
+        role: admin
+        name: rethink-admin
+    spec:
+      containers:
+      - name: proxy
+        image: rethinkdb:2.3.5
+        args: ["rethinkdb", "proxy", "--bind", "all", "--join", "ip-172-16-4-251.us-west-2.compute.internal:29015", "--cluster-tls-key", "/opt/tls/rethink-cluster-key.pem", "--cluster-tls-cert", "/opt/tls/rethink-cluster.pem", "--cluster-tls-ca", "/opt/tls/ca-chain.pem"]
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: rethink-tls
+          mountPath: /opt/tls
+          readOnly: true
+      volumes:
+      - name: rethink-tls
+        secret:
+          secretName: rethink-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    db: rethinkdb
+    role: admin
+  name: rethinkdb-admin
+spec:
+  ports:
+   - port: 8080
+     targetPort: 8080
+  type: ClusterIP
+  selector:
+    db: rethinkdb
+    role: admin

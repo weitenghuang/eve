@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: eve
-        image: quay.io/concur_platform/eve:7d068e6
+        image: quay.io/concur_platform/eve:21e9f38
         args: ["eve", "up"]
         ports:
         - containerPort: 443

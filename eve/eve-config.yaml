@@ -10,13 +10,13 @@ data:
   EVE_DNS: eve.default.svc.cluster.local
   EVE_SCHEME: https
   EVE_DB_PORT: "28015"
-  EVE_DB_URL: internal-rohr-integration-rethink-2052139842.us-west-2.elb.amazonaws.com:28015
+  EVE_DB_URL: internal-rohr-integration-rethink-37007921.us-west-2.elb.amazonaws.com:28015
   EVE_DB_NAME: eve
   EVE_DB_CA_CERT: /opt/backend/tls/ca-chain.pem
   EVE_QUEUE_PORT: "4222"
   EVE_QUEUE_URL: nats://nats.default.svc.cluster.local:4222
   EVE_QUEUE_MAX_RECONNECT: "450"
-  VAULT_ADDR: https://internal-rohr-integration-vault-1864487899.us-west-2.elb.amazonaws.com:443
+  VAULT_ADDR: https://internal-rohr-integration-vault-561451913.us-west-2.elb.amazonaws.com:443
   VAULT_CACERT: /opt/backend/tls/ca-chain.pem
   EVE_CERT_FILE: /opt/eve/tls/eve-server.pem
   EVE_KEY_FILE: /opt/eve/tls/eve-server-key.pem

@@ -9,7 +9,7 @@ spec:
     spec:
       containers:
       - name: eve
-        image: quay.io/concur_platform/eve:c7e1de6
+        image: quay.io/concur_platform/eve:21e9f38
         args: ["eve",  "db", "init"]
         volumeMounts:
         - name: eve-tls
