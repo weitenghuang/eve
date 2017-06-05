@@ -26,11 +26,7 @@ END
 
   echo -e "\e[93mTarball quoin files...\e[0m"
   #tar -cvzf quoin.tar.gz *.tf *.tfvars
-  if [[ -d "./certs" && -d "./keys" ]]; then
-    tar -cvzf quoin.tar.gz *.tf *.tfvars ./certs ./keys
-  else
-    tar -cvzf quoin.tar.gz *.tf *.tfvars
-  fi
+  tar -cvzf /tmp/quoin.tar.gz . &>/dev/null && mv /tmp/quoin.tar.gz .
 
   echo -e "\n\e[93mUpload quoin tarball to server...\e[0m"
   http --timeout 90 -a devop:${devop_pwd} --verify=no -f POST https://${eve_dns}:443/quoin/$name/upload Content-Type:"application/gzip" <quoin.tar.gz --verbose
@@ -42,6 +38,11 @@ create_infrastructure() {
   name="$1"
   quoin_name="$2"
   provider_slug="$3"
+  region="$4"
+  if [ -z "$region" ]; then
+    region="us-west-2"
+  fi
+
   quoin=$(http --timeout 90 -a devop:${devop_pwd} --verify=no -f GET "https://${eve_dns}:443/quoin/$quoin_name" --body --json)
 
   echo -e "\e[93mRequest to create infrastructure $name...\e[0m"
@@ -50,7 +51,8 @@ create_infrastructure() {
     "name": "$name",
     "quoin": $quoin,
     "variables": [
-        {"key":"name","value":"$name"}
+        {"key":"name","value":"$name"},
+        {"key":"region","value":"$region"}
     ],
     "providerSlug": "$provider_slug"
 }
