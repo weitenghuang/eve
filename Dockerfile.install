@@ -1,4 +1,4 @@
-FROM quay.io/concur_platform/alpine:3.5
+FROM quay.io/concur_platform/alpine:3.6
 MAINTAINER Concur Platform R&D <platform-engineering@concur.com>
 
 ENV PATH="$PATH:/opt/eve/bin"
