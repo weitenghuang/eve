@@ -25,6 +25,7 @@ type InfrastructureService interface {
 	DeleteInfrastructureState(name string) error
 	UpdateInfrastructureState(name string, state map[string]interface{}) error
 	UpdateInfrastructureStatus(name string, status Status) error
+	UpdateInfrastructureError(name string, infraError error) error
 	SubscribeAsyncProc(subject Subject, handler InfrastructureAsyncHandler) error
 	PublishMessageToQueue(subject Subject, infra *Infrastructure) error
 }
@@ -74,6 +75,7 @@ type Infrastructure struct {
 	Variables     []QuoinVar             `json:"variables,omitempty"`     // infrastructure environment variables
 	State         map[string]interface{} `json:"state,omitempty"`         // Terraform state output
 	Status        Status                 `json:"status,omitempty"`        // infrastructure environment lifecycle status
+	Error         error                  `json:"error,omitempty"`         // infrastructure error while creating/deleting
 	Authorization Authorization          `json:"authorization,omitempty"` // infrastructure authorization setting
 	ProviderSlug  string                 `json:"providerSlug"`            // infrastructure provider in slug format <provider:schema-type> aws:account
 }

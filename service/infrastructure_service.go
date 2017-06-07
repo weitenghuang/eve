@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/concur/eve"
 	"github.com/concur/eve/service/nats"
@@ -195,6 +196,19 @@ func (infraSvc InfrastructureService) UpdateInfrastructureStatus(name string, st
 
 	db := rethinkdb.DefaultSession()
 	if err := db.UpdateInfrastructureStatus(name, status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (infraSvc InfrastructureService) UpdateInfrastructureError(name string, infraError error) error {
+	if err := infraSvc.checkWritePermission(name); err != nil {
+		return err
+	}
+
+	db := rethinkdb.DefaultSession()
+	if err := db.UpdateInfrastructureError(name, infraError); err != nil {
 		return err
 	}
 

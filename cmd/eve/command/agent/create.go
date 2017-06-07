@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"errors"
 	"runtime"
 
 	log "github.com/Sirupsen/logrus"
@@ -28,31 +29,35 @@ func CreateCmd(stateServer *http.ApiServer) *cobra.Command {
 }
 
 func create(infraSvc eve.InfrastructureService, stateServer *http.ApiServer) eve.InfrastructureAsyncHandler {
-	var toFailStatus = func(name string) {
-		if statusErr := infraSvc.UpdateInfrastructureStatus(name, eve.FAILED); statusErr != nil {
-			log.Println(statusErr)
+	var writeError = func(name string, infraError error) {
+		if err := infraSvc.UpdateInfrastructureError(name, infraError); err != nil {
+			log.Println(err)
 		}
 	}
 	return func(infra *eve.Infrastructure) {
 		if infra == nil {
-			log.Println("Empty infrastructure object detected.")
+			err := errors.New("Empty infrastructure object detected")
+			writeError(infra.Name, err)
+			log.Println(err)
 			return
 		}
 		log.Printf("Start infrastructure creation process for %s.\n", infra.Name)
 		if err := infraSvc.UpdateInfrastructureStatus(infra.Name, eve.RUNNING); err != nil {
+			writeError(infra.Name, err)
 			log.Println(err)
 		}
 		quoinSvc := service.NewQuoinService(getAgentUser())
 		id := quoinSvc.GetQuoinArchiveIdFromUri(infra.Quoin.ArchiveUri)
 		quoinArchive, err := quoinSvc.GetQuoinArchive(id)
 		if err != nil {
-			toFailStatus(infra.Name)
+			writeError(infra.Name, err)
 			log.Println(err)
 			return
 		}
 		if quoinArchive == nil {
-			toFailStatus(infra.Name)
-			log.Println("Invalid Quoin Archive Id: ", id)
+			err := errors.New("Invalid Quoin Archive Id: " + id)
+			writeError(infra.Name, err)
+			log.Println(err)
 			return
 		}
 		log.Println("Infrastructure", infra.Name, "gets Quoin Archive:", id, quoinArchive.QuoinName)
@@ -61,14 +66,16 @@ func create(infraSvc eve.InfrastructureService, stateServer *http.ApiServer) eve
 		authenticator := createAuthenticator(infra.ProviderSlug)
 		tf := terraform.NewTerraformWithAuthenticator(infra.Name, remoteState, quoinArchive.Modules, varfile, authenticator)
 		if err := tf.ApplyQuoin(); err != nil {
-			toFailStatus(infra.Name)
+			writeError(infra.Name, err)
 			log.Println(err)
 			return
 		}
 		if err := infraSvc.UpdateInfrastructureStatus(infra.Name, eve.DEPLOYED); err != nil {
+			writeError(infra.Name, err)
 			log.Println(err)
 			return
 		}
+		writeError(infra.Name, nil)
 		log.Println("Creation Done!")
 	}
 }

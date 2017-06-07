@@ -24,6 +24,7 @@ func (db *DbSession) InsertInfrastructure(infra *eve.Infrastructure) error {
 			},
 			"ProviderSlug": infra.ProviderSlug,
 			"Status":       infra.Status,
+			"Error":        infra.Error,
 			"Variables":    infra.Variables,
 			"Authorization": map[string]interface{}{
 				"Owner":       infra.Authorization.Owner,
@@ -55,6 +56,27 @@ func (db *DbSession) UpdateInfrastructureStatus(name string, status eve.Status) 
 	res, err := r.DB(db.DbName).Table(INFRA_TABLE).Get(r.UUID(name)).Update(map[string]interface{}{
 		"Status": status,
 	}).RunWrite(db.Session)
+	if err != nil {
+		return err
+	}
+	log.Printf("%d row replaced. \n", res.Replaced)
+	return nil
+}
+
+func (db *DbSession) UpdateInfrastructureError(name string, infraError error) error {
+	var res r.WriteResponse
+	var err error
+
+	if infraError != nil {
+		res, err = r.DB(db.DbName).Table(INFRA_TABLE).Get(r.UUID(name)).Update(map[string]interface{}{
+			"Status": eve.FAILED,
+			"Error":  infraError,
+		}).RunWrite(db.Session)
+	} else {
+		res, err = r.DB(db.DbName).Table(INFRA_TABLE).Get(r.UUID(name)).Update(map[string]interface{}{
+			"Error": "",
+		}).RunWrite(db.Session)
+	}
 	if err != nil {
 		return err
 	}
