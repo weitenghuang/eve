@@ -70,7 +70,7 @@ func (db *DbSession) UpdateInfrastructureError(name string, infraError error) er
 	if infraError != nil {
 		res, err = r.DB(db.DbName).Table(INFRA_TABLE).Get(r.UUID(name)).Update(map[string]interface{}{
 			"Status": eve.FAILED,
-			"Error":  infraError,
+			"Error":  infraError.Error(),
 		}).RunWrite(db.Session)
 	} else {
 		res, err = r.DB(db.DbName).Table(INFRA_TABLE).Get(r.UUID(name)).Update(map[string]interface{}{

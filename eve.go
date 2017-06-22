@@ -75,7 +75,7 @@ type Infrastructure struct {
 	Variables     []QuoinVar             `json:"variables,omitempty"`     // infrastructure environment variables
 	State         map[string]interface{} `json:"state,omitempty"`         // Terraform state output
 	Status        Status                 `json:"status,omitempty"`        // infrastructure environment lifecycle status
-	Error         error                  `json:"error,omitempty"`         // infrastructure error while creating/deleting
+	Error         string                 `json:"error,omitempty"`         // infrastructure error while creating/deleting
 	Authorization Authorization          `json:"authorization,omitempty"` // infrastructure authorization setting
 	ProviderSlug  string                 `json:"providerSlug"`            // infrastructure provider in slug format <provider:schema-type> aws:account
 }
