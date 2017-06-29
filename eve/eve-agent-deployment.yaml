@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: eve-agent-create
-        image: quay.io/concur_platform/eve:21e9f38
+        image: quay.io/concur_platform/eve:60c5d4b
         args: ["eve", "agent", "create"]
         volumeMounts:
         - name: eve-tls
@@ -24,13 +24,18 @@ spec:
         - configMapRef:
             name: eve-config
         env:
+        - name: EVE_RETHINK_NODES
+          valueFrom:
+            configMapKeyRef:
+              name: rethink-cluster-config
+              key: eve_rethink_nodes
         - name: VAULT_TOKEN
           valueFrom:
             secretKeyRef:
               name: vault-token
               key: token
       - name: eve-agent-delete
-        image: quay.io/concur_platform/eve:21e9f38
+        image: quay.io/concur_platform/eve:60c5d4b
         args: ["eve", "agent", "delete"]
         volumeMounts:
         - name: eve-tls
@@ -43,6 +48,11 @@ spec:
         - configMapRef:
             name: eve-config
         env:
+        - name: EVE_RETHINK_NODES
+          valueFrom:
+            configMapKeyRef:
+              name: rethink-cluster-config
+              key: eve_rethink_nodes
         - name: VAULT_TOKEN
           valueFrom:
             secretKeyRef:

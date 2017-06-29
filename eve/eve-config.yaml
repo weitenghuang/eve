@@ -9,8 +9,6 @@ data:
   EVE_PORT: "443"
   EVE_DNS: eve.default.svc.cluster.local
   EVE_SCHEME: https
-  EVE_DB_PORT: "28015"
-  EVE_DB_URL: internal-rohr-integration-rethink-37007921.us-west-2.elb.amazonaws.com:28015
   EVE_DB_NAME: eve
   EVE_DB_CA_CERT: /opt/backend/tls/ca-chain.pem
   EVE_QUEUE_PORT: "4222"
