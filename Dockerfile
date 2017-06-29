@@ -1,4 +1,4 @@
-FROM golang:1.8.0-alpine
+FROM golang:1.8.3-alpine
 MAINTAINER Concur Platform R&D <platform-engineering@concur.com>
 
 ENV GOPATH="/go"

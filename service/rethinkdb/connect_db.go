@@ -9,7 +9,6 @@ import (
 
 type DbSession struct {
 	Session *r.Session
-	Url     string
 	DbName  string
 }
 
@@ -20,10 +19,14 @@ func buildSession() error {
 	dbConfig := config.NewRethinkDbConfig()
 	log.Println("Connecting to database...")
 	session, err := r.Connect(r.ConnectOpts{
-		Address:    dbConfig.Url,
-		InitialCap: dbConfig.InitialCap,
-		MaxOpen:    dbConfig.MaxOpen,
-		TLSConfig:  dbConfig.TLSConfig,
+		Addresses:     dbConfig.Addresses,
+		InitialCap:    dbConfig.InitialCap,
+		MaxOpen:       dbConfig.MaxOpen,
+		TLSConfig:     dbConfig.TLSConfig,
+		DiscoverHosts: dbConfig.DiscoverHosts,
+		Timeout:       dbConfig.Timeout,
+		ReadTimeout:   dbConfig.ReadTimeout,
+		WriteTimeout:  dbConfig.WriteTimeout,
 	})
 	if err != nil {
 		return err
@@ -31,7 +34,6 @@ func buildSession() error {
 	mu.Lock()
 	defaultSession = &DbSession{
 		Session: session,
-		Url:     dbConfig.Url,
 		DbName:  dbConfig.DatabaseName,
 	}
 	mu.Unlock()
@@ -41,20 +43,25 @@ func buildSession() error {
 func closeDefaultSession() error {
 	err := defaultSession.Session.Close()
 	if err != nil {
-		log.Println(err.Error())
+		log.Debugf("Failed to close db session, %v", err)
 	}
 	return nil
 }
 
 func DefaultSession() *DbSession {
-	if defaultSession == nil {
+	if defaultSession == nil || defaultSession.Session == nil {
 		if err := buildSession(); err != nil {
-			log.Println(err)
+			log.Errorf("Failed to build db session, %v", err)
 		}
-	}
-	if defaultSession != nil && defaultSession.Session != nil && !defaultSession.Session.IsConnected() {
-		if err := defaultSession.Session.Reconnect(); err != nil {
-			log.Println(err)
+	} else {
+		if !defaultSession.Session.IsConnected() {
+			if err := defaultSession.Session.Reconnect(); err != nil {
+				log.Debugf("Failed to reconnect db session, %v", err)
+				closeDefaultSession()
+				if err := buildSession(); err != nil {
+					log.Errorf("Failed to build db session, %v", err)
+				}
+			}
 		}
 	}
 	return defaultSession

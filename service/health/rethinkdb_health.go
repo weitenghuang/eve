@@ -11,7 +11,7 @@ import (
 )
 
 type RethinkdbChecker struct {
-	Url          string
+	Addresses    []string
 	DatabaseName string
 	InitialCap   int
 	MaxOpen      int
@@ -21,8 +21,9 @@ type RethinkdbChecker struct {
 
 func NewRethinkdbChecker() *RethinkdbChecker {
 	rethinkConfig := config.NewRethinkDbConfig()
+	// Health page will use rethink cluster loadbalacer directly as connection address
 	return &RethinkdbChecker{
-		Url:          rethinkConfig.Url,
+		Addresses:    rethinkConfig.Addresses,
 		DatabaseName: rethinkConfig.DatabaseName,
 		InitialCap:   1,
 		MaxOpen:      1,
@@ -37,7 +38,7 @@ func (rChecker *RethinkdbChecker) Ping() *eve.Error {
 	hostname, port := rChecker.splitAddress()
 	host := r.NewHost(hostname, port)
 	pool, err := r.NewPool(host, &r.ConnectOpts{
-		Address:    rChecker.Url,
+		Addresses:  rChecker.Addresses,
 		InitialCap: rChecker.InitialCap,
 		MaxOpen:    rChecker.MaxOpen,
 		Timeout:    rChecker.Timeout,
@@ -68,7 +69,7 @@ func (rChecker *RethinkdbChecker) DbReady() *eve.Error {
 	meta := rChecker.rethinkOptsMeta()
 
 	session, err := r.Connect(r.ConnectOpts{
-		Address:    rChecker.Url,
+		Addresses:  rChecker.Addresses,
 		InitialCap: rChecker.InitialCap,
 		MaxOpen:    rChecker.MaxOpen,
 		Timeout:    rChecker.Timeout,
@@ -114,7 +115,7 @@ func (rChecker *RethinkdbChecker) TableReady() *eve.Error {
 	meta := rChecker.rethinkOptsMeta()
 
 	session, err := r.Connect(r.ConnectOpts{
-		Address:    rChecker.Url,
+		Addresses:  rChecker.Addresses,
 		InitialCap: rChecker.InitialCap,
 		MaxOpen:    rChecker.MaxOpen,
 		Timeout:    rChecker.Timeout,
@@ -173,7 +174,7 @@ func (rChecker *RethinkdbChecker) TableReady() *eve.Error {
 
 func (rChecker *RethinkdbChecker) rethinkOptsMeta() map[string]string {
 	return map[string]string{
-		"Address":    rChecker.Url,
+		"Addresses":  strings.Join(rChecker.Addresses, ","),
 		"InitialCap": strconv.Itoa(rChecker.InitialCap),
 		"MaxOpen":    strconv.Itoa(rChecker.MaxOpen),
 		"Timeout":    rChecker.Timeout.String(),
@@ -183,14 +184,14 @@ func (rChecker *RethinkdbChecker) rethinkOptsMeta() map[string]string {
 func (rChecker *RethinkdbChecker) splitAddress() (hostname string, port int) {
 	hostname = "localhost"
 	port = 28015
-
-	addrParts := strings.Split(rChecker.Url, ":")
-
-	if len(addrParts) >= 1 {
-		hostname = addrParts[0]
-	}
-	if len(addrParts) >= 2 {
-		port, _ = strconv.Atoi(addrParts[1])
+	if len(rChecker.Addresses) > 0 {
+		addrParts := strings.Split(rChecker.Addresses[0], ":")
+		if len(addrParts) >= 1 {
+			hostname = addrParts[0]
+		}
+		if len(addrParts) >= 2 {
+			port, _ = strconv.Atoi(addrParts[1])
+		}
 	}
 
 	return

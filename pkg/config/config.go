@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -33,11 +34,15 @@ type ApiServerConfig struct {
 }
 
 type RethinkDbConfig struct {
-	Url          string
-	DatabaseName string
-	InitialCap   int
-	MaxOpen      int
-	TLSConfig    *tls.Config
+	Addresses     []string
+	DatabaseName  string
+	InitialCap    int
+	MaxOpen       int
+	DiscoverHosts bool
+	Timeout       time.Duration
+	WriteTimeout  time.Duration
+	ReadTimeout   time.Duration
+	TLSConfig     *tls.Config
 }
 
 type NatsConfig struct {
@@ -87,9 +92,22 @@ func NewApiServerConfig() *ApiServerConfig {
 }
 
 func NewRethinkDbConfig() *RethinkDbConfig {
-	url := os.Getenv("EVE_DB_URL")
-	if url == "" {
-		url = fmt.Sprintf("%s:%s", DEFAULT_DNS, DEFAULT_DB_PORT)
+	discovery := false
+	var addresses []string
+
+	eve_rethink_nodes := os.Getenv("EVE_RETHINK_NODES")
+	if eve_rethink_nodes != "" {
+		addresses = strings.Split(eve_rethink_nodes, ",")
+		for i, v := range addresses {
+			addresses[i] = strings.TrimSpace(v)
+		}
+		discovery = true
+	} else {
+		url := os.Getenv("EVE_DB_URL")
+		if url == "" {
+			url = fmt.Sprintf("%s:%s", DEFAULT_DNS, DEFAULT_DB_PORT)
+		}
+		addresses = append(addresses, url)
 	}
 
 	dbName := os.Getenv("EVE_DB_NAME")
@@ -110,11 +128,15 @@ func NewRethinkDbConfig() *RethinkDbConfig {
 	}
 
 	return &RethinkDbConfig{
-		Url:          url,
-		DatabaseName: dbName,
-		InitialCap:   4,
-		MaxOpen:      8,
-		TLSConfig:    tlsConfig,
+		Addresses:     addresses,
+		DatabaseName:  dbName,
+		InitialCap:    4,
+		MaxOpen:       8,
+		TLSConfig:     tlsConfig,
+		DiscoverHosts: discovery,
+		Timeout:       30 * time.Second,
+		WriteTimeout:  30 * time.Second,
+		ReadTimeout:   30 * time.Second,
 	}
 }
 
