@@ -1,16 +1,11 @@
 package httprouter
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/concur/eve"
 	eveHttp "github.com/concur/eve/http"
 	"net/http"
-)
-
-const (
-	CTX_USER = "user"
 )
 
 func buildQuoin(r *http.Request, apiServer *eveHttp.ApiServer) (*eve.Quoin, error) {
@@ -42,20 +37,8 @@ func buildInfrastructure(r *http.Request) (*eve.Infrastructure, error) {
 	return &infrastructure, nil
 }
 
-func setUserContext(r *http.Request) *http.Request {
-	username, _, _ := r.BasicAuth()
-
-	// TODO(weiteng.huang): User creation/retrieval will be from User service
-	ctx := context.WithValue(r.Context(), CTX_USER, &eve.User{
-		Id:           eve.UserId(username),
-		Organization: eve.Organization("concur"),
-		Teams:        []eve.Team{eve.Team(username)},
-	})
-	return r.WithContext(ctx)
-}
-
 func getUser(r *http.Request) (*eve.User, error) {
-	user := r.Context().Value(CTX_USER).(*eve.User)
+	user := r.Context().Value(eveHttp.CTX_USER).(*eve.User)
 	if user == nil {
 		return nil, fmt.Errorf("User information is missing.")
 	}

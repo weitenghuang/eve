@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/concur/eve/http"
 	"github.com/concur/eve/http/httprouter"
+	"github.com/concur/eve/http/vault"
 	"github.com/concur/eve/pkg/config"
 	"github.com/spf13/cobra"
 )
@@ -15,7 +16,9 @@ var upCmd = &cobra.Command{
 	Short: "To start eve api server",
 	Long:  `To start eve api server`,
 	Run: func(cmd *cobra.Command, args []string) {
-		apiServer.Router = httprouter.NewRouter()
+		apiServer.Routers = make(map[string]http.Router)
+		apiServer.Routers[http.HTTPROUTER] = httprouter.NewRouter()
+		apiServer.Routers[http.VAULT] = vault.NewRouter()
 		apiServer.ListenAndServe()
 	},
 }

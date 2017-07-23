@@ -121,7 +121,7 @@ func NewRethinkDbConfig() *RethinkDbConfig {
 	if rootCAFile != "" {
 		pool, err := LoadCAFile(rootCAFile)
 		if err != nil {
-			log.Println(err.Error())
+			log.Errorln(err)
 		} else {
 			tlsConfig.RootCAs = pool
 		}
