@@ -20,6 +20,9 @@ const (
 var routes = []string{
 	"/sys/mounts",
 	fmt.Sprint("/", PKI_STR, "/root/generate/internal"),
+	fmt.Sprint("/", PKI_STR, "/ca_chain"),
+	fmt.Sprint("/", PKI_STR, "/ca"),
+	fmt.Sprint("/", PKI_STR, "/ca/pem"),
 	fmt.Sprint("/", PKI_STR, "/config/urls"),
 	fmt.Sprint("/", PKI_STR, "/roles"),
 	fmt.Sprint("/", PKI_STR, "/issue"),
