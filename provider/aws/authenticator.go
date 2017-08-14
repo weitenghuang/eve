@@ -32,12 +32,36 @@ func NewAuthenticator(account *Account, iamRole, roleSessionName string) *Authen
 func (a *Authenticator) Authenticate() (*Credentials, error) {
 	switch a.Account.AuthType {
 	case IAM:
+		return a.iamDirect()
+	case AssumeRole:
 		return a.assumeRole()
 	default:
 		return nil, errors.New("Authenticate: Unsupported AuthType")
 	}
 }
 
+// iamDirect uses AWS IAM key and secret to operate in AWS directly without assuming role
+func (a *Authenticator) iamDirect() (*Credentials, error) {
+
+	// set credentials provider
+	v := &VaultCredentialsProvider{
+		Key: "secret/quoin/providers/aws/credentials",
+	}
+
+	// retrieve creds from vault
+	creds, err := v.Retrieve()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &Credentials{
+		AccessKeyId:     creds.AccessKeyID,
+		SecretAccessKey: creds.SecretAccessKey,
+	}, nil
+}
+
+// assumeRole assumes a specified role in an AWS account based on credentials
 func (a *Authenticator) assumeRole() (*Credentials, error) {
 	// Setup the AWS session
 	s := a.getSession()

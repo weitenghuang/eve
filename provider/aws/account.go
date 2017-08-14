@@ -5,7 +5,8 @@ package aws
 type AuthType int
 
 const (
-	IAM AuthType = iota
+	IAM        AuthType = iota
+	AssumeRole AuthType = iota
 )
 
 // Account represents and AWS Account

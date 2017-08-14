@@ -398,13 +398,21 @@ func (tf *Terraform) addProviderCredEnv(env []string) ([]string, error) {
 	awsKey := "AWS_ACCESS_KEY_ID"
 	awsSecret := "AWS_SECRET_ACCESS_KEY"
 	awsToken := "AWS_SESSION_TOKEN"
+
 	if len(env) == 0 {
 		env = os.Environ()
 	}
-	providerEnv := append(env,
+
+	env = append(env,
 		fmt.Sprintf("%s=%s", awsKey, c.AccessKeyId),
 		fmt.Sprintf("%s=%s", awsSecret, c.SecretAccessKey),
-		fmt.Sprintf("%s=%s", awsToken, c.SessionToken),
 	)
-	return providerEnv, nil
+
+	if len(c.SessionToken) > 0 {
+		env = append(env,
+			fmt.Sprintf("%s=%s", awsToken, c.SessionToken),
+		)
+	}
+
+	return env, nil
 }
