@@ -7,7 +7,7 @@ metadata:
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
     service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
-    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:iam::197631097688:server-certificate/eve-server-cert
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:iam::197631097688:server-certificate/eve-ap-southeast-2-server-cert
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "ssl"
 spec:
   selector:

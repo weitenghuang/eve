@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: eve-agent-create
-        image: quay.io/concur_platform/eve:60c5d4b
+        image: quay.io/concur_platform/eve:3f446d7
         args: ["eve", "agent", "create"]
         volumeMounts:
         - name: eve-tls
@@ -35,7 +35,7 @@ spec:
               name: vault-token
               key: token
       - name: eve-agent-delete
-        image: quay.io/concur_platform/eve:60c5d4b
+        image: quay.io/concur_platform/eve:3f446d7
         args: ["eve", "agent", "delete"]
         volumeMounts:
         - name: eve-tls

@@ -17,7 +17,7 @@ spec:
       containers:
       - name: proxy
         image: rethinkdb:2.3.5
-        args: ["rethinkdb", "proxy", "--bind", "all", "--join", "ip-172-16-4-251.us-west-2.compute.internal:29015", "--cluster-tls-key", "/opt/tls/rethink-cluster-key.pem", "--cluster-tls-cert", "/opt/tls/rethink-cluster.pem", "--cluster-tls-ca", "/opt/tls/ca-chain.pem"]
+        args: ["rethinkdb", "proxy", "--bind", "all", "--join", "ip-172-16-5-70.ap-southeast-2.compute.internal:29015", "--cluster-tls-key", "/opt/tls/rethink-cluster-key.pem", "--cluster-tls-cert", "/opt/tls/rethink-cluster.pem", "--cluster-tls-ca", "/opt/tls/ca-chain.pem"]
         ports:
         - containerPort: 8080
         volumeMounts:

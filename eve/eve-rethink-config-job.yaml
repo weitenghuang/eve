@@ -15,5 +15,5 @@ spec:
               "region=\"$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document/ | jq -r '.region')\" && rethink_instance_ids=\"$(aws autoscaling describe-auto-scaling-groups --region $region --auto-scaling-group-name $asg_name | jq -r '.AutoScalingGroups[0].Instances[] | select(.LifecycleState  == \"InService\") | .InstanceId' | xargs)\" && cd /opt/bin && curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.6.2/bin/linux/amd64/kubectl && chmod +x ./kubectl && /opt/bin/kubectl create configmap rethink-cluster-config --from-literal=eve_rethink_nodes=\"$(aws ec2 describe-instances --region $region --instance-ids $rethink_instance_ids | jq -r '.Reservations[].Instances | map(.PrivateDnsName + \":28015\")[]' | xargs | sed 's/  */,/g')\""]
         env:
         - name: asg_name
-          value: rohr-integration-rethink
+          value: scipian-production-rethink
       restartPolicy: Never

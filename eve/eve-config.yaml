@@ -4,7 +4,7 @@ metadata:
   name: eve-config
   namespace: default
 data:
-  ENVIRONMENT: QA
+  ENVIRONMENT: PROD
   VERSION: "v0.0.1"
   EVE_PORT: "443"
   EVE_DNS: eve.default.svc.cluster.local
@@ -14,7 +14,7 @@ data:
   EVE_QUEUE_PORT: "4222"
   EVE_QUEUE_URL: nats://nats.default.svc.cluster.local:4222
   EVE_QUEUE_MAX_RECONNECT: "450"
-  VAULT_ADDR: https://internal-rohr-integration-vault-561451913.us-west-2.elb.amazonaws.com:443
+  VAULT_ADDR: https://internal-scipian-production-vault-1307308960.ap-southeast-2.elb.amazonaws.com:443
   VAULT_CACERT: /opt/backend/tls/ca-chain.pem
   EVE_CERT_FILE: /opt/eve/tls/eve-server.pem
   EVE_KEY_FILE: /opt/eve/tls/eve-server-key.pem
