@@ -14,11 +14,10 @@ const (
 	AUTHENTICATION_FAILURE = "User authentication failure"
 )
 
-func Authentication(w http.ResponseWriter, r *http.Request) (*http.Request, error) {
+func Authentication(r *http.Request) (*http.Request, error) {
 	username, password, ok := r.BasicAuth()
 	if !ok {
 		log.Infof(AUTHENTICATION_FAILURE)
-		http.Error(w, AUTHENTICATION_FAILURE, http.StatusUnauthorized)
 		return nil, fmt.Errorf("%s:%s", AUTHENTICATION_FAILURE, username)
 	}
 	secretPath := fmt.Sprintf("secret/user/%s", username)
@@ -28,7 +27,6 @@ func Authentication(w http.ResponseWriter, r *http.Request) (*http.Request, erro
 	}
 	if user["name"] != username || user["password"] != password {
 		log.Infof("%s Name: %s, Password: %s", AUTHENTICATION_FAILURE, username, password)
-		http.Error(w, AUTHENTICATION_FAILURE, http.StatusUnauthorized)
 		return nil, fmt.Errorf("%s:%s", AUTHENTICATION_FAILURE, username)
 	}
 	log.Infoln("User logins:", username)

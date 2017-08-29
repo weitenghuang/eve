@@ -38,9 +38,10 @@ type VaultHandler struct {
 }
 
 func (v *VaultHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	req, err := eveHttp.Authentication(rw, req)
+	req, err := eveHttp.Authentication(req)
 	if err != nil {
 		log.Errorln("Authentication error", err)
+		http.Error(rw, eveHttp.AUTHENTICATION_FAILURE, http.StatusUnauthorized)
 		return
 	}
 	if err := routeFilter(rw, req); err != nil {

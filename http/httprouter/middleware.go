@@ -36,9 +36,11 @@ func logging(routeHandler httprouter.Handle) httprouter.Handle {
 func authentication(routeHandler httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var err error
-		r, err = eveHttp.Authentication(w, r)
+		r, err = eveHttp.Authentication(r)
 		if err != nil {
 			log.Infoln("Unauthorized request: ", err)
+			http.Error(w, eveHttp.AUTHENTICATION_FAILURE, http.StatusUnauthorized)
+			return
 		}
 		routeHandler(w, r, p)
 	}
