@@ -99,6 +99,7 @@ func postQuoinArchiveHandler(w http.ResponseWriter, r *http.Request, p httproute
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		log.Printf("Bad Request with invalid body. Error: %#v", err)
+		return
 	}
 	quoinArchive := &eve.QuoinArchive{
 		QuoinName: name,
