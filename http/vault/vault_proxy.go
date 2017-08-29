@@ -44,8 +44,9 @@ func (v *VaultHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		http.Error(rw, eveHttp.AUTHENTICATION_FAILURE, http.StatusUnauthorized)
 		return
 	}
-	if err := routeFilter(rw, req); err != nil {
+	if err := routeFilter(req); err != nil {
 		log.Errorln("Invalid request error", err)
+		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 	log.Infoln("ServeHTTP: ", *req)
@@ -120,7 +121,7 @@ func vaultResponseModifier(resp *http.Response) error {
 	return nil
 }
 
-func routeFilter(w http.ResponseWriter, r *http.Request) error {
+func routeFilter(r *http.Request) error {
 	route := r.URL.Path[len(eveHttp.VAULT)+1:]
 	dirs := strings.Split(route, "/")
 	var base string
@@ -140,7 +141,5 @@ func routeFilter(w http.ResponseWriter, r *http.Request) error {
 			return nil
 		}
 	}
-	err := fmt.Errorf("Invalid Vault API Request Path.")
-	http.Error(w, err.Error(), http.StatusBadRequest)
-	return err
+	return fmt.Errorf("Invalid Vault API Request Path.")
 }
