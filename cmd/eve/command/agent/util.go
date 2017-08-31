@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve"
-	"github.com/concur/eve/client"
-	"github.com/concur/eve/http"
-	"github.com/concur/eve/pkg/vault"
-	"github.com/concur/eve/provider/aws"
+	"github.com/scipian/eve"
+	"github.com/scipian/eve/client"
+	"github.com/scipian/eve/http"
+	"github.com/scipian/eve/pkg/vault"
+	"github.com/scipian/eve/provider/aws"
 )
 
 func createVarFile(quoinVars []eve.QuoinVar) []byte {

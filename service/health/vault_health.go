@@ -1,8 +1,8 @@
 package health
 
 import (
-	"github.com/concur/eve"
 	"github.com/hashicorp/vault/api"
+	"github.com/scipian/eve"
 )
 
 type VaultChecker struct {

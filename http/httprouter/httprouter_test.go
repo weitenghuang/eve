@@ -1,9 +1,9 @@
 package httprouter
 
 import (
-	"github.com/concur/eve"
-	eveHttp "github.com/concur/eve/http"
 	"github.com/julienschmidt/httprouter"
+	"github.com/scipian/eve"
+	eveHttp "github.com/scipian/eve/http"
 	"net/http"
 	"net/http/httptest"
 	"strings"

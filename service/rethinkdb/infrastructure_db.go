@@ -4,7 +4,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve"
+	"github.com/scipian/eve"
 	r "gopkg.in/gorethink/gorethink.v3"
 )
 

@@ -3,7 +3,7 @@ MAINTAINER Concur Platform R&D <platform-engineering@concur.com>
 
 ENV GOPATH="/go"
 ENV PATH="$PATH:$GOPATH/bin:/opt/bin"
-ENV EVE_PATH="github.com/concur/eve"
+ENV EVE_PATH="github.com/scipian/eve"
 ENV TERRAFORM_VERSION=0.8.7
 ENV TERRAFORM_SHA256SUM=7ca424d8d0e06697cc7f492b162223aef525bfbcd69248134a0ce0b529285c8c
 
@@ -62,6 +62,6 @@ RUN echo "===> Installing Terraform..." \
   && unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip -d /opt/bin \
   && rm -f terraform_${TERRAFORM_VERSION}_linux_amd64.zip
 
-ENTRYPOINT ["/go/src/github.com/concur/eve/docker-entrypoint.sh"]
+ENTRYPOINT ["/go/src/github.com/scipian/eve/docker-entrypoint.sh"]
 
-CMD ["tar", "-cvf", "-", "-C", "/go/src/github.com/concur/eve", "Dockerfile.install", "-C", "/go/src/github.com/concur/eve", "docker-entrypoint.sh", "-C", "/opt/bin", "eve", "-C", "/opt/bin", "evectl", "-C", "/opt/bin", "terraform", "-C", "/opt/dist", "evectl_darwin_amd64.zip", "-C", "/opt/dist", "evectl_windows_amd64.zip", "-C", "/opt/dist", "evectl_linux_amd64.zip", "-C", "/opt/dist", "evectl_SHA256SUMS"]
+CMD ["tar", "-cvf", "-", "-C", "/go/src/github.com/scipian/eve", "Dockerfile.install", "-C", "/go/src/github.com/scipian/eve", "docker-entrypoint.sh", "-C", "/opt/bin", "eve", "-C", "/opt/bin", "evectl", "-C", "/opt/bin", "terraform", "-C", "/opt/dist", "evectl_darwin_amd64.zip", "-C", "/opt/dist", "evectl_windows_amd64.zip", "-C", "/opt/dist", "evectl_linux_amd64.zip", "-C", "/opt/dist", "evectl_SHA256SUMS"]

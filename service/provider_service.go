@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/concur/eve"
-	"github.com/concur/eve/service/rethinkdb"
+	"github.com/scipian/eve"
+	"github.com/scipian/eve/service/rethinkdb"
 )
 
 type ProviderService struct {

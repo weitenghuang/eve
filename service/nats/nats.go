@@ -2,8 +2,8 @@ package nats
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve/pkg/config"
 	"github.com/nats-io/go-nats"
+	"github.com/scipian/eve/pkg/config"
 	"math"
 	"time"
 )

@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve/service"
 	"github.com/julienschmidt/httprouter"
+	"github.com/scipian/eve/service"
 )
 
 // GetProviderHandler returns the provider with the given name

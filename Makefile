@@ -30,7 +30,7 @@ ${LOCAL_GOPATH}/src: ${LOCAL_GOPATH}/bin
 ${LOCAL_GOPATH}/src/${ORG_PATH}: ${LOCAL_GOPATH}/src
 	@mkdir -p ${LOCAL_GOPATH}/src/${ORG_PATH}
 
-# Create a link from $PWD to .gopath/src/github.com/concur/eve
+# Create a link from $PWD to .gopath/src/github.com/scipian/eve
 ${LOCAL_GOPATH}/src/${REPO_PATH}: ${LOCAL_GOPATH}/src/${ORG_PATH}
 	@ln -s ${PWD} ${LOCAL_GOPATH}/src/${REPO_PATH}
 

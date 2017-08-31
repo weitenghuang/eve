@@ -2,8 +2,8 @@ package health
 
 import (
 	"crypto/tls"
-	"github.com/concur/eve"
-	"github.com/concur/eve/pkg/config"
+	"github.com/scipian/eve"
+	"github.com/scipian/eve/pkg/config"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"strconv"
 	"strings"

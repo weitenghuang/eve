@@ -1,9 +1,9 @@
 package health
 
 import (
-	"github.com/concur/eve"
-	"github.com/concur/eve/pkg/config"
 	"github.com/nats-io/go-nats"
+	"github.com/scipian/eve"
+	"github.com/scipian/eve/pkg/config"
 	"strconv"
 	"time"
 )

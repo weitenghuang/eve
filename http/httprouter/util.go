@@ -3,8 +3,8 @@ package httprouter
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/concur/eve"
-	eveHttp "github.com/concur/eve/http"
+	"github.com/scipian/eve"
+	eveHttp "github.com/scipian/eve/http"
 	"net/http"
 )
 

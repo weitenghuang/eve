@@ -1,8 +1,8 @@
 package command
 
 import (
-	"github.com/concur/eve/cmd/eve/command/agent"
-	"github.com/concur/eve/cmd/eve/command/db"
+	"github.com/scipian/eve/cmd/eve/command/agent"
+	"github.com/scipian/eve/cmd/eve/command/db"
 	"github.com/spf13/cobra"
 	// flag "github.com/spf13/pflag"
 )

@@ -2,7 +2,7 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve/cmd/eve/command"
+	"github.com/scipian/eve/cmd/eve/command"
 	"os"
 )
 

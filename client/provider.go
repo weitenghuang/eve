@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve"
+	"github.com/scipian/eve"
 )
 
 // GetProvider retrieves a provider with the given name

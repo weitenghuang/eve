@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve"
-	"github.com/concur/eve/pkg/terraform"
-	"github.com/concur/eve/service/rethinkdb"
+	"github.com/scipian/eve"
+	"github.com/scipian/eve/pkg/terraform"
+	"github.com/scipian/eve/service/rethinkdb"
 )
 
 type QuoinService struct {

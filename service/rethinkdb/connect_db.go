@@ -2,7 +2,7 @@ package rethinkdb
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve/pkg/config"
+	"github.com/scipian/eve/pkg/config"
 	r "gopkg.in/gorethink/gorethink.v3"
 	"sync"
 )

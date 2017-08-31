@@ -4,7 +4,7 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve/cmd/evectl/command"
+	"github.com/scipian/eve/cmd/evectl/command"
 )
 
 func main() {

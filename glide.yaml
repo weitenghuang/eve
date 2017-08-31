@@ -1,4 +1,4 @@
-package: github.com/concur/eve
+package: github.com/scipian/eve
 import:
 - package: github.com/Sirupsen/logrus
   version: 081307d9bc1364753142d5962fc1d795c742baaf

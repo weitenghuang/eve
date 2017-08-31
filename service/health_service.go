@@ -2,9 +2,9 @@ package service
 
 import (
 	"fmt"
-	"github.com/concur/eve"
-	"github.com/concur/eve/pkg/config"
-	"github.com/concur/eve/service/health"
+	"github.com/scipian/eve"
+	"github.com/scipian/eve/pkg/config"
+	"github.com/scipian/eve/service/health"
 	"time"
 )
 

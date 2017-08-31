@@ -2,10 +2,10 @@ package command
 
 import (
 	"fmt"
-	"github.com/concur/eve/http"
-	"github.com/concur/eve/http/httprouter"
-	"github.com/concur/eve/http/vault"
-	"github.com/concur/eve/pkg/config"
+	"github.com/scipian/eve/http"
+	"github.com/scipian/eve/http/httprouter"
+	"github.com/scipian/eve/http/vault"
+	"github.com/scipian/eve/pkg/config"
 	"github.com/spf13/cobra"
 )
 

@@ -2,8 +2,8 @@ package httprouter
 
 import (
 	log "github.com/Sirupsen/logrus"
-	eveHttp "github.com/concur/eve/http"
 	"github.com/julienschmidt/httprouter"
+	eveHttp "github.com/scipian/eve/http"
 	"net/http"
 )
 

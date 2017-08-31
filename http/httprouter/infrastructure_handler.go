@@ -3,9 +3,9 @@ package httprouter
 import (
 	"encoding/json"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve"
-	"github.com/concur/eve/service"
 	"github.com/julienschmidt/httprouter"
+	"github.com/scipian/eve"
+	"github.com/scipian/eve/service"
 	"net/http"
 )
 

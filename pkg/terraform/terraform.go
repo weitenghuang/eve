@@ -13,9 +13,9 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve/pkg/vault"
-	"github.com/concur/eve/provider/aws"
 	"github.com/pborman/uuid"
+	"github.com/scipian/eve/pkg/vault"
+	"github.com/scipian/eve/provider/aws"
 )
 
 const (

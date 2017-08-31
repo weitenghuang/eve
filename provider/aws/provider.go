@@ -5,8 +5,8 @@ import (
 	"sort"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve"
 	"github.com/mitchellh/mapstructure"
+	"github.com/scipian/eve"
 )
 
 // accountList Implements the sort interface to sort an array of

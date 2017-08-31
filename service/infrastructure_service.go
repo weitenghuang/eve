@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve"
-	"github.com/concur/eve/service/nats"
-	"github.com/concur/eve/service/rethinkdb"
+	"github.com/scipian/eve"
+	"github.com/scipian/eve/service/nats"
+	"github.com/scipian/eve/service/rethinkdb"
 )
 
 type InfrastructureService struct {

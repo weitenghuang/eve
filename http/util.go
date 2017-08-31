@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/concur/eve"
-	"github.com/concur/eve/pkg/vault"
+	"github.com/scipian/eve"
+	"github.com/scipian/eve/pkg/vault"
 	"net/http"
 )
 

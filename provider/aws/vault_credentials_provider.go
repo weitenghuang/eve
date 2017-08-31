@@ -2,7 +2,7 @@ package aws
 
 import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/concur/eve/pkg/vault"
+	"github.com/scipian/eve/pkg/vault"
 )
 
 // VaultCredentialsProvider retrieves credentials from vault at the specified key
